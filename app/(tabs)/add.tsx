@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState } from 'react';
 import { Alert, Button, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -7,9 +8,27 @@ const Add = () => {
     const [mail, setMail] = useState('');
     const handleSubmit = async () => {
         if (name && number && mail) {
+            const contact = { name, number, mail };
+            const existingContactsString = await AsyncStorage.getItem('contacts');
+            let contacts = []
+
+            if (existingContactsString) {
+                contacts = JSON.parse(existingContactsString);
+
+            }
+
+            contacts.push(contact);
+            await AsyncStorage.setItem('contacts', JSON.stringify(contacts));
+
+
             Alert.alert('Kontakt gespeichert', 'Name: ' + name + '\nTelefon: ' + number + '\nE-Mail: ' + mail);
+            setName('');
+            setMail('');
+            setNumber('');
+
+
         } else {
-            Alert.alert('Fehler:', 'fülle bitte alle Felder aus.')
+            Alert.alert('Fehler:', 'fülle bitte alle Felder aus.');
 
         }
     };
@@ -17,12 +36,26 @@ const Add = () => {
         <View style={styles.container}>
             <Text style={styles.title}>Neuen Kontakt hinzufügen</Text>
             <Text>Name:</Text>
-            <TextInput style={styles.input} value={name} onChangeText={setName}> </TextInput>
+            <TextInput
+                style={styles.input}
+                value={name}
+                onChangeText={setName}
+                multiline={false}
+                placeholder="Name eingeben" />
             <Text>Telefonnummer:</Text>
-            <TextInput style={styles.input} value={number} onChangeText={setNumber}> </TextInput>
-            <Text>E-Mail::</Text>
-            <TextInput style={styles.input} value={mail} onChangeText={setMail}> </TextInput>
-            <Button title="Kontakt Speichern" onPress={handleSubmit}> </Button>
+            <TextInput
+                style={styles.input}
+                value={number}
+                onChangeText={setNumber}
+                multiline={false}
+                placeholder="Nummer eingeben" />
+            <Text>E-Mail:</Text>
+            <TextInput
+                style={styles.input}
+                value={mail} onChangeText={setMail}
+                multiline={false}
+                placeholder="Mail eingeben" />
+            <Button title="Kontakt Speichern" onPress={handleSubmit} />
         </View>
     )
 }

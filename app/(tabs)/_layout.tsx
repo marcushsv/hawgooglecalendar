@@ -26,6 +26,12 @@ const TabsLayout = () => {
                     <Ionicons name="person" color={color} size={size} > </Ionicons>
                 ),
             }}></Tabs.Screen>
+            <Tabs.Screen name='calendar' options={{
+                title: 'Calendar', headerTitleAlign: 'center',
+                tabBarIcon: ({ color, size }) => (
+                    <Ionicons name="calendar" color={color} size={size} > </Ionicons>
+                ),
+            }}></Tabs.Screen>
 
         </Tabs>
     )
