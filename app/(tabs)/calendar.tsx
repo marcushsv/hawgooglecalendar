@@ -3,6 +3,31 @@ import { StyleSheet } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
+
+
+const customTheme = {
+    backgroundColor: '#ffffff',
+    calendarBackground: '#ffffff',
+    textSectionTitleColor: '#b6c1cd',
+    selectedDayBackgroundColor: '#00adf5',
+    selectedDayTextColor: '#ffffff',
+    todayTextColor: '#00adf5',
+    dayTextColor: '#2d4150',
+    textDisabledColor: '#d9e1e8',
+    dotColor: '#00adf5',
+    selectedDotColor: '#ffffff',
+    arrowColor: '#00adf5',
+    monthTextColor: '#00adf5',
+    textDayFontFamily: 'System',
+    textMonthFontFamily: 'System',
+    textDayHeaderFontFamily: 'System',
+    textDayFontSize: 16,
+    textMonthFontSize: 18,
+    textDayHeaderFontSize: 14
+};
+
+const STORAGE_KEY = 'calendar_events';
+
 export default function CalendarApp() {
     const [selectedDate, setSelectedDate] = useState('');
 
@@ -27,7 +52,7 @@ export default function CalendarApp() {
     return (
         <SafeAreaProvider>
             <SafeAreaView style={styles.container}>
-                <Calendar
+                <Calendar theme={customTheme}
                     onDayPress={(day) => {
                         setSelectedDate(day.dateString);
                     }}
