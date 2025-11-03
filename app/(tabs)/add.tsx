@@ -8,9 +8,10 @@ const Add = () => {
     const [mail, setMail] = useState('');
     const handleSubmit = async () => {
         if (name && number && mail) {
+            type Contact = { name: string; number: string; mail: string };
             const contact = { name, number, mail };
             const existingContactsString = await AsyncStorage.getItem('contacts');
-            let contacts = []
+            let contacts: Contact[] = [];
 
             if (existingContactsString) {
                 contacts = JSON.parse(existingContactsString);

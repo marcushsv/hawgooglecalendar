@@ -23,13 +23,19 @@ const TabsLayout = () => {
             <Tabs.Screen name='profile' options={{
                 title: 'Profile', headerTitleAlign: 'center',
                 tabBarIcon: ({ color, size }) => (
-                    <Ionicons name="person" color={color} size={size} > </Ionicons>
+                    <Ionicons name="person" color={color} size={size}> </Ionicons>
                 ),
             }}></Tabs.Screen>
             <Tabs.Screen name='calendar' options={{
                 title: 'Calendar', headerTitleAlign: 'center',
                 tabBarIcon: ({ color, size }) => (
                     <Ionicons name="calendar" color={color} size={size} > </Ionicons>
+                ),
+            }}></Tabs.Screen>
+            <Tabs.Screen name='addEvent' options={{
+                title: 'AddEvent', headerTitleAlign: 'center',
+                tabBarIcon: ({ color, size }) => (
+                    <Ionicons name="add" color={color} size={size} > </Ionicons>
                 ),
             }}></Tabs.Screen>
 
