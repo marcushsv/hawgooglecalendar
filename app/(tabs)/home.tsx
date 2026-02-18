@@ -2,7 +2,7 @@ import { BlueDataCard } from '@/components/BlueDataCard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { FlatList, Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 
 
 const Home = () => {
@@ -34,14 +34,16 @@ const Home = () => {
                 style= {styles.hawLogo}
                 resizeMode='contain'
             />
+            <Text style={styles.title}>Willkommen zu deinem Kalender</Text>
+
             <BlueDataCard title="08:30-12:00 Uhr - ASAI" subtitle="Dozent: Prof. Dr.Sabine Schumann " onPress={() => {}}>
                 <Text>Notizen:</Text>
                 
                 <Text>Themenfindung, Ideen: Recommender Systeme, ...</Text>
             </BlueDataCard>
-            <FlatList data={contacts} renderItem={renderItem} keyExtractor={(item, index) => index.toString()}>
+           {/* <FlatList data={contacts} renderItem={renderItem} keyExtractor={(item, index) => index.toString()}>
 
-            </FlatList>
+            </FlatList> */}
         </View>
     )
 }
@@ -55,10 +57,11 @@ const styles = StyleSheet.create({
         backgroundColor: 'white'
     },
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        textAlign: 'center'
+        fontSize: 20,
+        fontWeight: 450,
+        marginTop: 20,
+        textAlign: 'left',
+        color: '#3a38ac'
     },
     contactItem: {
         padding: 15,
