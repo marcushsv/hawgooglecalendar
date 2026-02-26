@@ -1,12 +1,10 @@
-import { CalendarEvent } from '@/types/event';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Crypto from 'expo-crypto';
 import React, { useState } from 'react';
 import { Alert, Button, ScrollView, StyleSheet, Text, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 const AddEvent: React.FC = () => {
+    const API_URL = "http://localhost:3000"; 
 
     const [title, setTitle] = useState('');
     const [module, setModule] = useState('');
@@ -24,46 +22,51 @@ const AddEvent: React.FC = () => {
 
     const handleSave = async () => {
         if (!title || !date || !module || !mainLecturer) {
-            Alert.alert('Fehler', 'Titel, Datum, Modul, Hauptlehrender sind Pflichtfelder!');
-            return;
-        }
-        const uId = await Crypto.randomUUID();
+             Alert.alert("Fehler", "Titel, Datum, Modul, Hauptlehrender sind Pflichtfelder!");
+            return; 
+        } 
+        const entryPayload = {
+    title: `${module} – ${title}`,      // oder nur title
+    dozent: mainLecturer,
+    raum: location,
+    datum: `${date}T00:00:00.000Z`,     // ISO string -> Date castet Mongoose
+    zeitVon: startTime,
+    zeitBis: endTime,
+    notizen: description,
+    wichtig: false,
+    userId: "demo", // optional
+  };
+  try {
+    const res = await fetch(`${API_URL}/entries`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(entryPayload),
+    });
 
-        const newEvent: CalendarEvent = {
-            id: uId,
-            title,
-            module,
-            description,
-            date,
-            mainLecturer,
-            subLecturer,
-            startTime,
-            endTime,
-            location,
-            veranstaltungsart
+    const text = await res.text(); // <- IMMER lesen, hilft mega beim Debug
+    console.log("POST /entries:", res.status, text);
 
-        };
-        const eventsString = await AsyncStorage.getItem('events');
-        const events: CalendarEvent[] = eventsString ? JSON.parse(eventsString) : [];
-        events.push(newEvent);
-        await AsyncStorage.setItem('events', JSON.stringify(events));
-        Alert.alert('Gespeichert', 'Event gespeichert!');
-        setTitle('');
-        setModule('');
-        setDescription('');
-        setDate('');
-        setMainLecturer('');
-        setSubLecturer('');
-        setStartTime('');
-        setEndTime('');
-        setLocation('');
-        setVeranstaltungsart('')
+    if (!res.ok) {
+      Alert.alert("Fehler", text || "Speichern fehlgeschlagen");
+      return;
+    }
 
-
-
-
-
-    };
+    Alert.alert("Gespeichert", "Event gespeichert!");
+    setTitle("");
+    setModule("");
+    setDescription("");
+    setDate("");
+    setMainLecturer("");
+    setSubLecturer("");
+    setStartTime("");
+    setEndTime("");
+    setLocation("");
+    setVeranstaltungsart("");
+  } catch (e: any) {
+    console.log("NETWORK ERROR", e);
+    Alert.alert("Netzwerkfehler", e?.message ?? String(e));
+  }
+    }
 
     return (
 
@@ -73,13 +76,13 @@ const AddEvent: React.FC = () => {
                 <Text>Titel</Text>
                 <TextInput style={styles.input} value={title} onChangeText={setTitle} />
                 <Text>Beschreibung (optional)</Text>
-                <TextInput style={styles.input} value={module} onChangeText={setModule} />
-                <Text>Modul</Text>
-                <TextInput style={styles.input} value={mainLecturer} onChangeText={setMainLecturer} />
-                <Text>Hauptdozent</Text>
-                <TextInput style={styles.input} value={subLecturer} onChangeText={setSubLecturer} />
-                <Text>Nebendozent (optional)</Text>
                 <TextInput style={styles.input} value={description} onChangeText={setDescription} />
+                <Text>Modul</Text>
+                <TextInput style={styles.input} value={module} onChangeText={setModule} />
+                <Text>Hauptdozent</Text>
+                <TextInput style={styles.input} value={mainLecturer} onChangeText={setMainLecturer} />
+                <Text>Nebendozent (optional)</Text>
+                <TextInput style={styles.input} value={subLecturer} onChangeText={setSubLecturer} />
                 <Text>Datum (YYYY-MM-DD)</Text>
                 <TextInput style={styles.input} value={date} onChangeText={setDate} />
                 <Text>Startzeit (optional, HH:mm)</Text>

@@ -3,13 +3,14 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 type BlueDataCardProps = {
     title:string,
-    subtitle?:string,
+    subtitle?:string | string[],
     children?: ReactNode,
-    onPress?: ()=> void
+    onPress?: ()=> void,
+    defaultOpen?: boolean
 }
 
-export function BlueDataCard({title, subtitle, children, onPress,}:BlueDataCardProps) {
-    const [isOpen,setIsOpen] = useState(false)
+export function BlueDataCard({title, subtitle, children, onPress, defaultOpen}:BlueDataCardProps) {
+    const [isOpen,setIsOpen] = useState(defaultOpen ?? false)
 
     return <View style={styles.card}>
         <Pressable
@@ -23,7 +24,10 @@ export function BlueDataCard({title, subtitle, children, onPress,}:BlueDataCardP
                 <Text style={styles.title}>
                     {title}
                 </Text>
-                {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+                 {Array.isArray(subtitle)
+                    ? subtitle.map((s, i) => <Text key={i} style={styles.subtitle}>{s}</Text>)
+                    : subtitle && <Text style={styles.subtitle}>{subtitle}</Text>
+                }
             </View>
             <Text style={styles.arrow}>{isOpen ? "-" : "+"}</Text>
         </Pressable>

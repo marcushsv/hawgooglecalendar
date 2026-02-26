@@ -1,5 +1,4 @@
-import { CalendarEvent } from '@/types/event';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CalendarEvent } from '@/haw_backend/types/event';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -32,16 +31,40 @@ const customTheme = {
 };
 
 const CalendarScreen: React.FC = () => {
-    const [events, setEvents] = useState<CalendarEvent[]>([]);
-    const [selectedDate, setSelectedDate] = useState<string>('');
+const API_URL = "http://localhost:3000";
+const [events, setEvents] = useState<CalendarEvent[]>([]);
+const [selectedDate, setSelectedDate] = useState<string>('');
 
-    useEffect(() => {
-        const loadEvents = async () => {
-            const eventsString = await AsyncStorage.getItem('events')
-            setEvents(eventsString ? JSON.parse(eventsString) : []);
-        };
-        loadEvents();
-    }, []);
+const loadEvents = async () => {
+  try {
+    const res = await fetch(`${API_URL}/entries`);
+    if (!res.ok) throw new Error("Fehler beim Laden");
+
+    const entries = await res.json();
+
+    const mapped: CalendarEvent[] = entries.map((e: any) => ({
+      id: e._id, // Mongo ID
+      title: e.title,
+      module: e.title, // falls du kein Modul-Feld im Entry hast
+      description: e.notizen ?? "",
+      date: new Date(e.datum).toISOString().slice(0, 10),
+      mainLecturer: e.dozent ?? "",
+      subLecturer: "",
+      startTime: e.zeitVon ?? "",
+      endTime: e.zeitBis ?? "",
+      location: e.raum ?? "",
+      veranstaltungsart: "",
+    }));
+
+    setEvents(mapped);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+useEffect(() => {
+  loadEvents();
+}, []);
 
     const markedDates = useMemo(() => {
         const marked: Record<string, object> = {};
@@ -125,58 +148,3 @@ const styles = StyleSheet.create({
 
 export default CalendarScreen;
 
-
-
-
-/* const STORAGE_KEY = 'calendar_events';
-
-export default function CalendarApp() {
-    const [selectedDate, setSelectedDate] = useState('');
-
-    // Beispiel Events
-    const events = {
-        '2025-09-25': { marked: true, dotColor: 'red' },
-        '2025-09-26': { marked: true, dotColor: 'blue' },
-        '2025-09-27': { marked: true, selected: true, selectedColor: 'orange' },
-        '2025-09-30': { marked: true, dotColor: 'green' }
-    };
-
-    const marked = useMemo(() => ({
-        ...events,
-        [selectedDate]: {
-            ...events[selectedDate],
-            selected: true,
-            selectedColor: events[selectedDate]?.selectedColor || '#00adf5',
-            selectedTextColor: '#ffffff'
-        }
-    }), [selectedDate, events]);
-
-    return (
-        <SafeAreaProvider>
-            <SafeAreaView style={styles.container}>
-                <Calendar theme={customTheme}
-                    onDayPress={(day) => {
-                        setSelectedDate(day.dateString);
-                    }}
-                    markedDates={marked}
-                />
-            </SafeAreaView>
-        </SafeAreaProvider>
-    );
-}
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center'
-    },
-    infoContainer: {
-        padding: 20,
-        alignItems: 'center'
-    },
-    infoText: {
-        fontSize: 16,
-        color: '#333'
-    }
-
-}); */

@@ -1,15 +1,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config();
-
+require('dotenv').config({ path: './config.env' });
 const Entry = require('./models/Entry');
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.ATLAS_URI)
   .then(() => console.log('MongoDB verbunden'))
   .catch(err => console.error(err));
 
@@ -25,6 +25,7 @@ app.get('/entries', async (req, res) => {
 
 // Eintrag erstellen
 app.post('/entries', async (req, res) => {
+  console.log("POST /entries body:", req.body);
   try {
     const entry = new Entry(req.body);
     await entry.save();
@@ -53,6 +54,21 @@ app.put('/entries/:id', async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
+app.patch("/entries/:id/toggle-wichtig", async (req, res) => {
+  try {
+    const entry = await Entry.findByIdAndUpdate(
+      req.params.id,
+      [{ $set: { wichtig: { $not: "$wichtig" } } }],
+      { new: true }
+    );
+    res.json(entry);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.get("/ping", (req, res) => res.send("pong"));
 
 app.listen(process.env.PORT || 3000, () => {
   console.log('Server läuft');

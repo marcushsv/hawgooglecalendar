@@ -1,10 +1,14 @@
-import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { router } from 'expo-router';
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 const Profile = () => {
     return (
         <View style={styles.container}>
             <Text>Mein Profil</Text>
+            <Pressable onPress={() => router.push('/register')}>
+                <Text > Registrieren</Text>
+            </Pressable>
         </View>
     )
 }
