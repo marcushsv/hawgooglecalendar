@@ -133,7 +133,7 @@ const AddEvent: React.FC = () => {
 
                 <TouchableOpacity style={styles.button} onPress={handleSave}>
                     <Text style={styles.buttonText}>
-                        {activeTab === 'kurssuche' ? 'Hinzufügen' : 'Erstellen'}
+                        {activeTab === 'kurssuche' ? 'Suchen' : 'Erstellen'}
                     </Text>
                 </TouchableOpacity>
             </ScrollView>
