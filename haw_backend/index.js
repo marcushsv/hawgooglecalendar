@@ -163,6 +163,31 @@ app.post('/course-entries', async (req, res) => {
   }
 });
 
+// Kurseinträge als Bulk importieren (Admin)
+app.post('/course-entries/bulk', async (req, res) => {
+  try {
+    const entries = req.body;
+    if (!Array.isArray(entries) || entries.length === 0) {
+      return res.status(400).json({ error: 'Keine Einträge übergeben.' });
+    }
+    const result = await CourseEntry.insertMany(entries, { ordered: false });
+    res.status(201).json({ inserted: result.length });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Kurseintrag bearbeiten (Admin)
+app.put('/course-entries/:id', async (req, res) => {
+  try {
+    const entry = await CourseEntry.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true, runValidators: true });
+    if (!entry) return res.status(404).json({ error: 'Eintrag nicht gefunden.' });
+    res.json(entry);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 // Kurseintrag löschen (Admin)
 app.delete('/course-entries/:id', async (req, res) => {
   try {

@@ -4,14 +4,10 @@ import React, { useState } from 'react';
 import { Alert, Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-
 const Login = () => {
     const API_URL = "http://10.0.2.2:3000";
     const [email, setEmail] = useState('');
     const [passwort, setPasswort] = useState('');
-     console.log('Button gedrückt!');
-    console.log('Sende an:', `${API_URL}/auth/login`); // 👈
-    console.log('Email:', email, 'Passwort:', passwort); // 👈
 
     const handleLogin = async () => {
         if (!email || !passwort) {
@@ -19,33 +15,24 @@ const Login = () => {
             return;
         }
         try {
-            console.log('Vor fetch...'); // 👈
             const res = await fetch(`${API_URL}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, passwort }),
             });
-             console.log('Nach fetch, Status:', res.status); // 👈
             const data = await res.json();
-            console.log('Status:', res.status);  // 👈
-            console.log('Data:', data);          // 👈
             if (!res.ok) { Alert.alert('Fehler', data.error); return; }
-            // Token speichern
             const saveToken = async (token: string, userId: string) => {
-            if (Platform.OS === 'web') {
-                localStorage.setItem('token', token);
-                localStorage.setItem('userId', userId);
-            } else {
-                await SecureStore.setItemAsync('token', token);
-                await SecureStore.setItemAsync('userId', userId);
-            }
-        };
+                if (Platform.OS === 'web') {
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('userId', userId);
+                } else {
+                    await SecureStore.setItemAsync('token', token);
+                    await SecureStore.setItemAsync('userId', userId);
+                }
+            };
             Alert.alert('Willkommen!', `Hallo ${data.user.vorname}!`);
-            console.log('Login erfolgreich!');
             await saveToken(data.token, data.user._id);
-            //await SecureStore.setItemAsync('token', data.token);
-            //await SecureStore.setItemAsync('userId', data.user._id);
-
             router.push('/home');
         } catch (e: any) {
             Alert.alert('Netzwerkfehler', e?.message);
@@ -54,16 +41,25 @@ const Login = () => {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-       <View style={styles.container}>
-        <Image
-            source={require("../assets/images/HAW_Logo.jpg")}
-            style={styles.hawLogo}
-            resizeMode='contain'
-        />
+            <View style={styles.container}>
+                {/* Top-Bar */}
+                <View style={styles.topBar}>
+                    <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+                        <Text style={styles.backArrow}>‹</Text>
+                        <Text style={styles.backText}>Zurück</Text>
+                    </TouchableOpacity>
+                    <Image
+                        source={require('../assets/images/HAW_Logo.jpg')}
+                        style={styles.hawLogo}
+                        resizeMode="contain"
+                    />
+                </View>
 
-        <View style={styles.card}>
-            <Text style={styles.cardTitle}>Login</Text>
-             <TextInput
+                <View style={styles.spacer} />
+
+                <View style={styles.card}>
+                    <Text style={styles.cardTitle}>Login</Text>
+                    <TextInput
                         style={styles.input}
                         placeholder="HAW E-Mail"
                         placeholderTextColor="#6A8FAD"
@@ -72,7 +68,7 @@ const Login = () => {
                         value={email}
                         onChangeText={setEmail}
                     />
-            <TextInput
+                    <TextInput
                         style={[styles.input, { marginBottom: 0 }]}
                         placeholder="Passwort"
                         placeholderTextColor="#6A8FAD"
@@ -80,23 +76,21 @@ const Login = () => {
                         value={passwort}
                         onChangeText={setPasswort}
                     />
-        </View> 
+                </View>
 
-        <TouchableOpacity style={styles.button} onPress={() => {
-            handleLogin();
-        }}>
-            <Text style={styles.buttonText}>Einloggen</Text>
-        </TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                    <Text style={styles.buttonText}>Einloggen</Text>
+                </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push('/register')}>
+                <TouchableOpacity onPress={() => router.push('/register')}>
                     <Text style={styles.registerLink}>Noch kein Account? Registrieren</Text>
-        </TouchableOpacity>
+                </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push('/adminLogin')}>
+                <TouchableOpacity onPress={() => router.push('/adminLogin')}>
                     <Text style={styles.adminLink}>Admin Login</Text>
-        </TouchableOpacity>
-    </View>
-    </SafeAreaView>
+                </TouchableOpacity>
+            </View>
+        </SafeAreaView>
     );
 };
 
@@ -104,34 +98,45 @@ export default Login;
 
 const styles = StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: 'white' },
-     registerLink: {
-        color: '#6A8FAD',
-        textAlign: 'center',
-        marginTop: 16,
+    container: { flex: 1, backgroundColor: 'white', paddingHorizontal: 20 },
+    topBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingTop: 50,
     },
-    adminLink: {
+    backBtn: { flexDirection: 'row', alignItems: 'center' },
+    backArrow: { fontSize: 28, color: '#002E99', lineHeight: 30 },
+    backText: { color: '#002E99', fontSize: 15, fontWeight: '500', marginLeft: 2 },
+    hawLogo: { width: 120, height: 50 },
+    spacer: { height: 100 },
+    card: {
+        backgroundColor: '#9FBDDB',
+        borderRadius: 15,
+        padding: 16,
+    },
+    cardTitle: {
         color: '#002E99',
+        fontSize: 18,
+        fontWeight: '600',
         textAlign: 'center',
-        marginTop: 24,
-        fontSize: 13,
-        opacity: 0.6,
+        marginBottom: 16,
     },
-    container: {
-        padding: 20,
-        backgroundColor: 'white',
-        flex: 1,
-    },
-    hawLogo: {
-        width: 120,
-        height: 50,
-        alignSelf: 'flex-end',
+    input: {
+        backgroundColor: '#C5D7EA',
+        borderRadius: 20,
+        padding: 10,
+        paddingHorizontal: 16,
+        color: '#002E99',
+        marginBottom: 10,
+        textAlign: 'center',
     },
     button: {
         backgroundColor: '#9FBDDB',
         borderRadius: 20,
         padding: 14,
         alignItems: 'center',
-        marginTop: 24,
+        marginTop: 45,
         width: '60%',
         alignSelf: 'center',
     },
@@ -140,26 +145,23 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
     },
-    card: {
-    backgroundColor: '#9FBDDB',
-    borderRadius: 15,
-    padding: 16,
-    marginTop: 20,
-},
-cardTitle: {
-    color: '#002E99',
-    fontSize: 18,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: 16,
-},
-input: {
-    backgroundColor: '#C5D7EA',  // ← heller als card damit Felder sichtbar sind
-    borderRadius: 20,
-    padding: 10,
-    paddingHorizontal: 16,
-    color: '#002E99',
-    marginBottom: 10,
-    textAlign: 'center',
-}
+    registerLink: {
+        color: '#002E99',
+        textAlign: 'center',
+        marginTop: 35,
+    },
+    guestLink: {
+        color: '#002E99',
+        textAlign: 'center',
+        marginTop: 10,
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    adminLink: {
+        color: '#002E99',
+        textAlign: 'center',
+        marginTop: 24,
+        fontSize: 13,
+        opacity: 0.6,
+    },
 });

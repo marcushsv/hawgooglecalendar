@@ -48,12 +48,18 @@ const AdminLogin = () => {
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
+                <View style={styles.topBar}>
+                                    <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+                                        <Text style={styles.backArrow}>‹</Text>
+                                        <Text style={styles.backText}>Zurück</Text>
+                                    </TouchableOpacity>
                 <Image
                     source={require("../assets/images/HAW_Logo.jpg")}
                     style={styles.hawLogo}
                     resizeMode='contain'
                 />
-
+                </View>
+                <View style={{ height: 55 }} />
                 <View style={styles.card}>
                     <Text style={styles.cardTitle}>Admin Login</Text>
                     <TextInput
@@ -75,13 +81,12 @@ const AdminLogin = () => {
                     />
                 </View>
 
+                <View style={{ height: 20 }} />
+
                 <TouchableOpacity style={styles.button} onPress={handleAdminLogin}>
                     <Text style={styles.buttonText}>Admin Login</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => router.push('/login')}>
-                    <Text style={styles.backLink}>← Zurück zum normalen Login</Text>
-                </TouchableOpacity>
             </View>
         </SafeAreaView>
     );
@@ -91,6 +96,15 @@ export default AdminLogin;
 
 const styles = StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: 'white' },
+    topBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingTop: 50,
+    },
+    backBtn: { flexDirection: 'row', alignItems: 'center' },
+    backArrow: { fontSize: 28, color: '#002E99', lineHeight: 30 },
+    backText: { color: '#002E99', fontSize: 15, fontWeight: '500', marginLeft: 2 },
     backLink: {
         color: '#6A8FAD',
         textAlign: 'center',
