@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const API_URL = "http://10.0.2.2:3000";
 const RAUM_BUCHUNG_URL = "https://auth.anny.eu/start-session?entityId=https%3A%2F%2Flogin.haw-hamburg.de%2Frealms%2FHAW-Hamburg&returnTo=https%3A%2F%2Fanny.eu%2Fexplore%2Fhaw-hamburg-hibs"; // ← echte URL anpassen
+const MENSA_URL = "https://www.stwhh.de/speiseplan?t=today"
 
 const Profile = () => {
     const [user, setUser] = useState<any>(null);
@@ -110,6 +111,12 @@ const Profile = () => {
                 {/* Raumbuchung */}
                 <TouchableOpacity style={styles.linkCard} onPress={() => Linking.openURL(RAUM_BUCHUNG_URL)}>
                     <Text style={styles.linkCardText}>🏛️  Zur Raumbuchung (Anny)</Text>
+                    <Text style={styles.linkCardArrow}>→</Text>
+                </TouchableOpacity>
+
+                {/* Essen & Trinken */}
+                <TouchableOpacity style={styles.linkCard} onPress={() => Linking.openURL(MENSA_URL)}>
+                    <Text style={styles.linkCardText}>🥗  Zu den Speiseplänen (Mensa)</Text>
                     <Text style={styles.linkCardArrow}>→</Text>
                 </TouchableOpacity>
 
