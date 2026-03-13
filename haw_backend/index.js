@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config({ path: './config.env' });
 const Entry = require('./models/Entry');
 const CourseEntry = require('./models/CourseEntry');
+const Announcement = require('./models/Announcement');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
@@ -192,6 +193,73 @@ app.put('/course-entries/:id', async (req, res) => {
 app.delete('/course-entries/:id', async (req, res) => {
   try {
     await CourseEntry.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Gelöscht' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- User Management (Admin) ---
+
+app.get('/admin/users', async (req, res) => {
+    try {
+        const users = await User.find().select('-passwort').sort({ createdAt: -1 });
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.put('/admin/users/:id', async (req, res) => {
+    try {
+        const { vorname, nachname, email, matrikelnummer, neuesPasswort } = req.body;
+        const update = {};
+        if (vorname !== undefined) update.vorname = vorname;
+        if (nachname !== undefined) update.nachname = nachname;
+        if (email !== undefined) update.email = email;
+        if (matrikelnummer !== undefined) update.matrikelnummer = matrikelnummer;
+        if (neuesPasswort) update.passwort = await bcrypt.hash(neuesPasswort, 10);
+        const user = await User.findByIdAndUpdate(req.params.id, update, { new: true }).select('-passwort');
+        if (!user) return res.status(404).json({ error: 'User nicht gefunden' });
+        res.json(user);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+app.delete('/admin/users/:id', async (req, res) => {
+    try {
+        await User.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Gelöscht' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// --- Announcements (Admin-Meldungen für alle User) ---
+
+app.get('/announcements', async (req, res) => {
+  try {
+    const announcements = await Announcement.find().sort({ createdAt: -1 });
+    res.json(announcements);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/announcements', async (req, res) => {
+  try {
+    const announcement = new Announcement(req.body);
+    await announcement.save();
+    res.status(201).json(announcement);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.delete('/announcements/:id', async (req, res) => {
+  try {
+    await Announcement.findByIdAndDelete(req.params.id);
     res.json({ message: 'Gelöscht' });
   } catch (err) {
     res.status(500).json({ error: err.message });

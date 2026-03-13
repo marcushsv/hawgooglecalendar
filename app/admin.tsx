@@ -10,6 +10,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const API_URL = "http://10.0.2.2:3000";
 const FACHSEMESTER_OPTIONS = [1, 2, 3, 4, 5, 6, 7];
 
+interface AppUser {
+    _id: string;
+    vorname?: string;
+    nachname?: string;
+    email: string;
+    matrikelnummer?: string;
+    role: string;
+}
+
 interface CourseEntry {
     _id: string;
     title: string;
@@ -52,7 +61,7 @@ const AdminDashboard = () => {
     const [filterSG, setFilterSG] = useState('');
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
-    const [activeTab, setActiveTab] = useState<'erstellen' | 'verwalten' | 'import'>('erstellen');
+    const [activeTab, setActiveTab] = useState<'erstellen' | 'verwalten' | 'import' | 'meldungen' | 'user'>('erstellen');
 
     // Edit Modal state
     const [editEntry, setEditEntry] = useState<CourseEntry | null>(null);
@@ -69,11 +78,175 @@ const AdminDashboard = () => {
     const [editWiederholung, setEditWiederholung] = useState<'nie' | 'wöchentlich' | '2-wöchentlich'>('nie');
     const [editSaving, setEditSaving] = useState(false);
 
+    // Meldungen state
+    const [meldungTitle, setMeldungTitle] = useState('');
+    const [meldungText, setMeldungText] = useState('');
+    const [meldungSaving, setMeldungSaving] = useState(false);
+    const [announcements, setAnnouncements] = useState<{ _id: string; title: string; message: string; createdAt: string }[]>([]);
+    const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
+    const [deletingAnnouncementId, setDeletingAnnouncementId] = useState<string | null>(null);
+
+    // User management state
+    const [users, setUsers] = useState<AppUser[]>([]);
+    const [loadingUsers, setLoadingUsers] = useState(false);
+    const [editUser, setEditUser] = useState<AppUser | null>(null);
+    const [editUserVorname, setEditUserVorname] = useState('');
+    const [editUserNachname, setEditUserNachname] = useState('');
+    const [editUserEmail, setEditUserEmail] = useState('');
+    const [editUserMatrikelnummer, setEditUserMatrikelnummer] = useState('');
+    const [editUserNeuesPasswort, setEditUserNeuesPasswort] = useState('');
+    const [editUserSaving, setEditUserSaving] = useState(false);
+    const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+
     // Import state
     const [csvText, setCsvText] = useState('');
     const [importing, setImporting] = useState(false);
     const [importPreview, setImportPreview] = useState<any[]>([]);
     const [importError, setImportError] = useState('');
+
+    const loadUsers = async () => {
+        setLoadingUsers(true);
+        try {
+            const token = await getToken();
+            const res = await fetch(`${API_URL}/admin/users`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
+            const data = await res.json();
+            setUsers(data);
+        } catch (e: any) {
+            Alert.alert("Fehler", e?.message ?? String(e));
+        } finally {
+            setLoadingUsers(false);
+        }
+    };
+
+    const openEditUser = (u: AppUser) => {
+        setEditUser(u);
+        setEditUserVorname(u.vorname ?? '');
+        setEditUserNachname(u.nachname ?? '');
+        setEditUserEmail(u.email);
+        setEditUserMatrikelnummer(u.matrikelnummer ?? '');
+        setEditUserNeuesPasswort('');
+    };
+
+    const handleSaveUserEdit = async () => {
+        if (!editUser) return;
+        setEditUserSaving(true);
+        try {
+            const token = await getToken();
+            const body: any = {
+                vorname: editUserVorname,
+                nachname: editUserNachname,
+                email: editUserEmail,
+                matrikelnummer: editUserMatrikelnummer,
+            };
+            if (editUserNeuesPasswort.trim()) body.neuesPasswort = editUserNeuesPasswort.trim();
+            const res = await fetch(`${API_URL}/admin/users/${editUser._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify(body),
+            });
+            if (!res.ok) { Alert.alert("Fehler", "Konnte nicht gespeichert werden."); return; }
+            const updated = await res.json();
+            setUsers(prev => prev.map(u => u._id === updated._id ? updated : u));
+            setEditUser(null);
+        } catch (e: any) {
+            Alert.alert("Netzwerkfehler", e?.message ?? String(e));
+        } finally {
+            setEditUserSaving(false);
+        }
+    };
+
+    const handleDeleteUser = (u: AppUser) => {
+        Alert.alert("User löschen?", `${u.vorname ?? ''} ${u.nachname ?? ''} (${u.email}) wirklich löschen?`, [
+            { text: "Abbrechen", style: "cancel" },
+            {
+                text: "Löschen", style: "destructive", onPress: async () => {
+                    setDeletingUserId(u._id);
+                    try {
+                        const token = await getToken();
+                        await fetch(`${API_URL}/admin/users/${u._id}`, {
+                            method: 'DELETE',
+                            headers: token ? { Authorization: `Bearer ${token}` } : {},
+                        });
+                        setUsers(prev => prev.filter(x => x._id !== u._id));
+                    } catch (e: any) {
+                        Alert.alert("Fehler", e?.message ?? String(e));
+                    } finally {
+                        setDeletingUserId(null);
+                    }
+                }
+            }
+        ]);
+    };
+
+    const loadAnnouncements = async () => {
+        setLoadingAnnouncements(true);
+        try {
+            const res = await fetch(`${API_URL}/announcements`);
+            const data = await res.json();
+            setAnnouncements(data);
+        } catch (e: any) {
+            Alert.alert("Fehler", e?.message ?? String(e));
+        } finally {
+            setLoadingAnnouncements(false);
+        }
+    };
+
+    const handleSaveMeldung = async () => {
+        if (!meldungTitle.trim() || !meldungText.trim()) {
+            Alert.alert("Fehler", "Titel und Nachricht sind Pflichtfelder!");
+            return;
+        }
+        setMeldungSaving(true);
+        try {
+            const token = await getToken();
+            const res = await fetch(`${API_URL}/announcements`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify({ title: meldungTitle.trim(), message: meldungText.trim() }),
+            });
+            if (!res.ok) { Alert.alert("Fehler", "Konnte nicht gespeichert werden."); return; }
+            const newAnnouncement = await res.json();
+            setAnnouncements(prev => [newAnnouncement, ...prev]);
+            setMeldungTitle('');
+            setMeldungText('');
+            Alert.alert("Gesendet!", "Meldung wurde an alle User verschickt.");
+        } catch (e: any) {
+            Alert.alert("Netzwerkfehler", e?.message ?? String(e));
+        } finally {
+            setMeldungSaving(false);
+        }
+    };
+
+    const handleDeleteAnnouncement = (id: string, announcementTitle: string) => {
+        Alert.alert("Löschen?", `"${announcementTitle}" wirklich löschen?`, [
+            { text: "Abbrechen", style: "cancel" },
+            {
+                text: "Löschen", style: "destructive", onPress: async () => {
+                    setDeletingAnnouncementId(id);
+                    try {
+                        const token = await getToken();
+                        await fetch(`${API_URL}/announcements/${id}`, {
+                            method: 'DELETE',
+                            headers: token ? { Authorization: `Bearer ${token}` } : {},
+                        });
+                        setAnnouncements(prev => prev.filter(a => a._id !== id));
+                    } catch (e: any) {
+                        Alert.alert("Fehler", e?.message ?? String(e));
+                    } finally {
+                        setDeletingAnnouncementId(null);
+                    }
+                }
+            }
+        ]);
+    };
 
     const loadEntries = async () => {
         setLoadingEntries(true);
@@ -93,6 +266,8 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         if (activeTab === 'verwalten') loadEntries();
+        if (activeTab === 'meldungen') loadAnnouncements();
+        if (activeTab === 'user') loadUsers();
     }, [activeTab]);
 
     const handleSave = async () => {
@@ -349,6 +524,22 @@ const AdminDashboard = () => {
                             CSV Import
                         </Text>
                     </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.tab, activeTab === 'meldungen' && styles.tabActive]}
+                        onPress={() => setActiveTab('meldungen')}
+                    >
+                        <Text style={[styles.tabText, activeTab === 'meldungen' && styles.tabTextActive]}>
+                            Meldungen
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.tab, activeTab === 'user' && styles.tabActive]}
+                        onPress={() => setActiveTab('user')}
+                    >
+                        <Text style={[styles.tabText, activeTab === 'user' && styles.tabTextActive]}>
+                            User
+                        </Text>
+                    </TouchableOpacity>
                 </View>
 
                 <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -584,12 +775,134 @@ const AdminDashboard = () => {
                         </View>
                     )}
 
+                    {/* === MELDUNGEN === */}
+                    {activeTab === 'meldungen' && (
+                        <View style={styles.card}>
+                            <Text style={styles.sectionLabel}>Meldung an alle User senden</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Titel (z.B. Wartungsarbeiten) *"
+                                placeholderTextColor="#6A8FAD"
+                                value={meldungTitle}
+                                onChangeText={setMeldungTitle}
+                            />
+                            <TextInput
+                                style={styles.notizInput}
+                                placeholder="Nachricht *"
+                                placeholderTextColor="#6A8FAD"
+                                multiline
+                                value={meldungText}
+                                onChangeText={setMeldungText}
+                            />
+                            <TouchableOpacity style={styles.saveButton} onPress={handleSaveMeldung} disabled={meldungSaving}>
+                                {meldungSaving
+                                    ? <ActivityIndicator color="white" />
+                                    : <Text style={styles.saveButtonText}>Meldung senden</Text>
+                                }
+                            </TouchableOpacity>
+
+                            <Text style={[styles.pickerLabel, { marginTop: 20 }]}>Aktive Meldungen</Text>
+                            {loadingAnnouncements && <ActivityIndicator color="#002E99" style={{ marginTop: 8 }} />}
+                            {!loadingAnnouncements && announcements.length === 0 && (
+                                <Text style={styles.noResultsText}>Keine aktiven Meldungen.</Text>
+                            )}
+                            {announcements.map(a => (
+                                <View key={a._id} style={styles.entryItem}>
+                                    <View style={styles.entryInfo}>
+                                        <Text style={styles.entryTitle}>{a.title}</Text>
+                                        <Text style={styles.entryMeta}>{a.message}</Text>
+                                    </View>
+                                    <TouchableOpacity
+                                        style={styles.deleteButton}
+                                        onPress={() => handleDeleteAnnouncement(a._id, a.title)}
+                                        disabled={deletingAnnouncementId === a._id}
+                                    >
+                                        {deletingAnnouncementId === a._id
+                                            ? <ActivityIndicator color="white" size="small" />
+                                            : <Text style={styles.deleteButtonText}>✕</Text>
+                                        }
+                                    </TouchableOpacity>
+                                </View>
+                            ))}
+                        </View>
+                    )}
+
+                    {/* === USER MANAGEMENT === */}
+                    {activeTab === 'user' && (
+                        <View style={styles.card}>
+                            <Text style={styles.sectionLabel}>User verwalten</Text>
+
+                            <TouchableOpacity style={styles.filterButton} onPress={loadUsers}>
+                                <Text style={styles.filterButtonText}>Aktualisieren</Text>
+                            </TouchableOpacity>
+
+                            {loadingUsers && <ActivityIndicator color="#002E99" style={{ marginTop: 12 }} />}
+                            {!loadingUsers && users.length === 0 && (
+                                <Text style={styles.noResultsText}>Keine User gefunden.</Text>
+                            )}
+                            {users.map(u => (
+                                <View key={u._id} style={styles.entryItem}>
+                                    <View style={styles.entryInfo}>
+                                        <Text style={styles.entryTitle}>{u.vorname} {u.nachname}</Text>
+                                        <Text style={styles.entryMeta}>{u.email}</Text>
+                                        {u.matrikelnummer ? <Text style={styles.entryMeta}>Matr.: {u.matrikelnummer}</Text> : null}
+                                        <Text style={styles.entryMeta}>Rolle: {u.role}</Text>
+                                    </View>
+                                    <View style={styles.entryActions}>
+                                        <TouchableOpacity style={styles.editButton} onPress={() => openEditUser(u)}>
+                                            <Text style={styles.editButtonText}>✎</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.deleteButton}
+                                            onPress={() => handleDeleteUser(u)}
+                                            disabled={deletingUserId === u._id}
+                                        >
+                                            {deletingUserId === u._id
+                                                ? <ActivityIndicator color="white" size="small" />
+                                                : <Text style={styles.deleteButtonText}>✕</Text>
+                                            }
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            ))}
+                        </View>
+                    )}
+
                     <TouchableOpacity style={styles.logoutButton} onPress={() => router.push('/login')}>
                         <Text style={styles.logoutButtonText}>Ausloggen</Text>
                     </TouchableOpacity>
                 </ScrollView>
             </View>
-            {/* === EDIT MODAL === */}
+            {/* === USER EDIT MODAL === */}
+            <Modal visible={!!editUser} animationType="slide" transparent onRequestClose={() => setEditUser(null)}>
+                <View style={styles.modalOverlay}>
+                    <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+                        <Text style={styles.modalTitle}>User bearbeiten</Text>
+
+                        <TextInput style={styles.input} placeholder="Vorname" placeholderTextColor="#6A8FAD"
+                            value={editUserVorname} onChangeText={setEditUserVorname} />
+                        <TextInput style={styles.input} placeholder="Nachname" placeholderTextColor="#6A8FAD"
+                            value={editUserNachname} onChangeText={setEditUserNachname} />
+                        <TextInput style={styles.input} placeholder="E-Mail *" placeholderTextColor="#6A8FAD"
+                            value={editUserEmail} onChangeText={setEditUserEmail} keyboardType="email-address" autoCapitalize="none" />
+                        <TextInput style={styles.input} placeholder="Matrikelnummer" placeholderTextColor="#6A8FAD"
+                            value={editUserMatrikelnummer} onChangeText={setEditUserMatrikelnummer} />
+                        <TextInput style={styles.input} placeholder="Neues Passwort" placeholderTextColor="#6A8FAD"
+                            value={editUserNeuesPasswort} onChangeText={setEditUserNeuesPasswort} secureTextEntry />
+
+                        <View style={styles.modalButtons}>
+                            <TouchableOpacity style={styles.modalCancelButton} onPress={() => setEditUser(null)}>
+                                <Text style={styles.modalCancelText}>Abbrechen</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.saveButton, { flex: 1 }]} onPress={handleSaveUserEdit} disabled={editUserSaving}>
+                                {editUserSaving ? <ActivityIndicator color="white" /> : <Text style={styles.saveButtonText}>Speichern</Text>}
+                            </TouchableOpacity>
+                        </View>
+                        <View style={{ height: 20 }} />
+                    </ScrollView>
+                </View>
+            </Modal>
+            {/* === COURSE ENTRY EDIT MODAL === */}
             <Modal visible={!!editEntry} animationType="slide" transparent onRequestClose={() => setEditEntry(null)}>
                 <View style={styles.modalOverlay}>
                     <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>

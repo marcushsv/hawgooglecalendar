@@ -73,28 +73,65 @@ const AddEvent: React.FC = () => {
         }
     };
 
+    const toMinutes = (time: string) => {
+        const [h, m] = time.split(':').map(Number);
+        return h * 60 + m;
+    };
+
+    const findConflicts = (datum: string, zeitVon: string, zeitBis: string, entries: any[]) =>
+        entries.filter(e => {
+            if (!e.zeitVon || !e.zeitBis) return false;
+            if (e.datum.slice(0, 10) !== datum.slice(0, 10)) return false;
+            return toMinutes(zeitVon) < toMinutes(e.zeitBis) && toMinutes(zeitBis) > toMinutes(e.zeitVon);
+        });
+
     const handleAddCourseEntry = async (course: CourseEntry) => {
         const userId = await getUserId();
         setAddingId(course._id);
         try {
-            const res = await fetch(`${API_URL}/entries`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title: course.title,
-                    datum: course.datum,
-                    zeitVon: course.zeitVon,
-                    zeitBis: course.zeitBis,
-                    raum: course.raum,
-                    dozent: course.dozent,
-                    wichtig: course.wichtig ?? false,
-                    notizen: course.notizen,
-                    wiederholung: course.wiederholung ?? 'nie',
-                    userId,
-                }),
-            });
-            if (!res.ok) { Alert.alert("Fehler", "Konnte nicht hinzugefügt werden."); return; }
-            Alert.alert("Hinzugefügt!", `"${course.title}" wurde deinem Kalender hinzugefügt.`);
+            const payload = {
+                title: course.title,
+                datum: course.datum,
+                zeitVon: course.zeitVon,
+                zeitBis: course.zeitBis,
+                raum: course.raum,
+                dozent: course.dozent,
+                wichtig: course.wichtig ?? false,
+                notizen: course.notizen,
+                wiederholung: course.wiederholung ?? 'nie',
+                userId,
+            };
+
+            const doAdd = async () => {
+                const res = await fetch(`${API_URL}/entries`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                if (!res.ok) { Alert.alert("Fehler", "Konnte nicht hinzugefügt werden."); return; }
+                Alert.alert("Hinzugefügt!", `"${course.title}" wurde deinem Kalender hinzugefügt.`);
+            };
+
+            if (course.zeitVon && course.zeitBis) {
+                const existingRes = await fetch(`${API_URL}/entries?userId=${userId}`);
+                const existingEntries = existingRes.ok ? await existingRes.json() : [];
+                const conflicts = findConflicts(course.datum, course.zeitVon, course.zeitBis, existingEntries);
+                if (conflicts.length > 0) {
+                    const names = conflicts.map((c: any) => `• ${c.title} (${c.zeitVon}–${c.zeitBis})`).join('\n');
+                    setAddingId(null);
+                    Alert.alert(
+                        'Zeitkonflikt',
+                        `Dieser Eintrag überschneidet sich mit:\n${names}`,
+                        [
+                            { text: 'Ändern', style: 'cancel' },
+                            { text: 'Trotzdem hinzufügen', onPress: doAdd },
+                        ]
+                    );
+                    return;
+                }
+            }
+
+            await doAdd();
         } catch (e: any) {
             Alert.alert("Netzwerkfehler", e?.message ?? String(e));
         } finally {
@@ -122,20 +159,45 @@ const AddEvent: React.FC = () => {
             wiederholung,
             userId,
         };
+
+        const doSave = async () => {
+            try {
+                const res = await fetch(`${API_URL}/entries`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+                const text = await res.text();
+                if (!res.ok) { Alert.alert("Fehler", text); return; }
+                Alert.alert("Gespeichert!", "Eintrag wurde erstellt.");
+                setName(''); setDatum(todayDisplay); setWichtig(false); setNotiz('');
+                setRaum(''); setDozent(''); setStartTime(''); setEndTime(''); setWiederholung('nie');
+            } catch (e: any) {
+                Alert.alert("Netzwerkfehler", e?.message ?? String(e));
+            }
+        };
+
         try {
-            const res = await fetch(`${API_URL}/entries`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
-            const text = await res.text();
-            if (!res.ok) { Alert.alert("Fehler", text); return; }
-            Alert.alert("Gespeichert!", "Eintrag wurde erstellt.");
-            setName(''); setDatum(todayDisplay); setWichtig(false); setNotiz('');
-            setRaum(''); setDozent(''); setStartTime(''); setEndTime(''); setWiederholung('nie');
-        } catch (e: any) {
-            Alert.alert("Netzwerkfehler", e?.message ?? String(e));
+            const existingRes = await fetch(`${API_URL}/entries?userId=${userId}`);
+            const existingEntries = existingRes.ok ? await existingRes.json() : [];
+            const conflicts = findConflicts(isoDate, startTime, endTime, existingEntries);
+            if (conflicts.length > 0) {
+                const names = conflicts.map((c: any) => `• ${c.title} (${c.zeitVon}–${c.zeitBis})`).join('\n');
+                Alert.alert(
+                    'Zeitkonflikt',
+                    `Dieser Eintrag überschneidet sich mit:\n${names}`,
+                    [
+                        { text: 'Ändern', style: 'cancel' },
+                        { text: 'Trotzdem hinzufügen', onPress: doSave },
+                    ]
+                );
+                return;
+            }
+        } catch {
+            // if conflict check fails, proceed with save
         }
+
+        await doSave();
     };
 
     const formatDate = (isoString: string) => {

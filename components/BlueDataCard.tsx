@@ -7,13 +7,15 @@ type BlueDataCardProps = {
     children?: ReactNode,
     onPress?: () => void,
     onDelete?: () => void,
-    defaultOpen?: boolean
+    defaultOpen?: boolean,
+    cardColor?: string,
+    titleColor?: string,
 }
 
-export function BlueDataCard({ title, subtitle, children, onPress, onDelete, defaultOpen }: BlueDataCardProps) {
+export function BlueDataCard({ title, subtitle, children, onPress, onDelete, defaultOpen, cardColor, titleColor }: BlueDataCardProps) {
     const [isOpen, setIsOpen] = useState(defaultOpen ?? false)
 
-    return <View style={styles.card}>
+    return <View style={[styles.card, cardColor ? { backgroundColor: cardColor } : undefined]}>
         <Pressable
             onPress={() => {
                 setIsOpen((prev) => !prev);
@@ -22,7 +24,7 @@ export function BlueDataCard({ title, subtitle, children, onPress, onDelete, def
             style={styles.header}
         >
             <View style={{ flex: 1 }}>
-                <Text style={styles.title}>{title}</Text>
+                <Text style={[styles.title, titleColor ? { color: titleColor } : undefined]}>{title}</Text>
                 {Array.isArray(subtitle)
                     ? subtitle.map((s, i) => <Text key={i} style={styles.subtitle}>{s}</Text>)
                     : subtitle && <Text style={styles.subtitle}>{subtitle}</Text>

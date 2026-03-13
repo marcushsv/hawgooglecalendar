@@ -1,12 +1,15 @@
+import { File, Paths } from 'expo-file-system/next';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
+import * as Sharing from 'expo-sharing';
 import React, { useEffect, useState } from 'react';
-import { Alert, Image, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const API_URL = "http://10.0.2.2:3000";
 const RAUM_BUCHUNG_URL = "https://auth.anny.eu/start-session?entityId=https%3A%2F%2Flogin.haw-hamburg.de%2Frealms%2FHAW-Hamburg&returnTo=https%3A%2F%2Fanny.eu%2Fexplore%2Fhaw-hamburg-hibs"; // ← echte URL anpassen
 const MENSA_URL = "https://www.stwhh.de/speiseplan?t=today"
+const OUTLOOK_URL = "https://outlook.office365.com"
 
 const Profile = () => {
     const [user, setUser] = useState<any>(null);
@@ -17,6 +20,7 @@ const Profile = () => {
     const [neuesPasswort, setNeuesPasswort] = useState('');
     const [passwortWdh, setPasswortWdh] = useState('');
     const [showPasswort, setShowPasswort] = useState(false);
+    const [exporting, setExporting] = useState(false);
 
     useEffect(() => {
         const loadUser = async () => {
@@ -55,6 +59,62 @@ const Profile = () => {
             setShowPasswort(false);
         } catch (e: any) {
             Alert.alert('Netzwerkfehler', e?.message);
+        }
+    };
+
+    const handleExportICS = async () => {
+        setExporting(true);
+        try {
+            const userId = await SecureStore.getItemAsync('userId');
+            if (!userId) { Alert.alert('Fehler', 'Nicht angemeldet.'); return; }
+
+            const res = await fetch(`${API_URL}/entries?userId=${userId}`);
+            if (!res.ok) throw new Error('Einträge konnten nicht geladen werden.');
+            const entries = await res.json();
+
+            const lines: string[] = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//HAW Kalender//DE',
+                'CALSCALE:GREGORIAN',
+                'METHOD:PUBLISH',
+            ];
+
+            for (const e of entries) {
+                const dateStr = e.datum.slice(0, 10).replace(/-/g, '');
+                const start = (e.zeitVon ?? '00:00').replace(':', '');
+                const end = (e.zeitBis ?? '01:00').replace(':', '');
+
+                lines.push('BEGIN:VEVENT');
+                lines.push(`UID:${e._id}@hawkalender`);
+                lines.push(`DTSTART:${dateStr}T${start}00`);
+                lines.push(`DTEND:${dateStr}T${end}00`);
+                lines.push(`SUMMARY:${e.title}`);
+                if (e.notizen) lines.push(`DESCRIPTION:${e.notizen.replace(/\n/g, '\\n')}`);
+                if (e.raum) lines.push(`LOCATION:${e.raum}`);
+                if (e.wiederholung === 'wöchentlich') lines.push('RRULE:FREQ=WEEKLY');
+                if (e.wiederholung === '2-wöchentlich') lines.push('RRULE:FREQ=WEEKLY;INTERVAL=2');
+                lines.push('END:VEVENT');
+            }
+
+            lines.push('END:VCALENDAR');
+
+            const tempFile = new File(Paths.cache, 'haw-kalender.ics');
+            tempFile.write(lines.join('\r\n'));
+
+            if (await Sharing.isAvailableAsync()) {
+                await Sharing.shareAsync(tempFile.uri, {
+                    mimeType: 'text/calendar',
+                    dialogTitle: 'Kalender exportieren',
+                    UTI: 'public.calendar',
+                });
+            } else {
+                Alert.alert('Nicht verfügbar', 'Teilen ist auf diesem Gerät nicht möglich.');
+            }
+        } catch (e: any) {
+            Alert.alert('Fehler', e?.message ?? 'Export fehlgeschlagen.');
+        } finally {
+            setExporting(false);
         }
     };
 
@@ -110,20 +170,35 @@ const Profile = () => {
 
                 {/* Raumbuchung */}
                 <TouchableOpacity style={styles.linkCard} onPress={() => Linking.openURL(RAUM_BUCHUNG_URL)}>
-                    <Text style={styles.linkCardText}>🏛️  Zur Raumbuchung (Anny)</Text>
+                    <Text style={styles.linkCardText}>🏛️  Raumbuchung (Anny)</Text>
                     <Text style={styles.linkCardArrow}>→</Text>
                 </TouchableOpacity>
 
                 {/* Essen & Trinken */}
                 <TouchableOpacity style={styles.linkCard} onPress={() => Linking.openURL(MENSA_URL)}>
-                    <Text style={styles.linkCardText}>🥗  Zu den Speiseplänen (Mensa)</Text>
+                    <Text style={styles.linkCardText}>🥗  Speisepläne (Mensa)</Text>
                     <Text style={styles.linkCardArrow}>→</Text>
+                </TouchableOpacity>
+
+                {/* Outlook */}
+                <TouchableOpacity style={styles.linkCard} onPress={() => Linking.openURL(OUTLOOK_URL)}>
+                    <Text style={styles.linkCardText}>📧  Outlook </Text>
+                    <Text style={styles.linkCardArrow}>→</Text>
+                </TouchableOpacity>
+
+                {/* Kalender Export */}
+                <TouchableOpacity style={styles.linkCard} onPress={handleExportICS} disabled={exporting}>
+                    {exporting
+                        ? <ActivityIndicator color="#002E99" />
+                        : <Text style={styles.linkCardText}>📅  Kalender exportieren</Text>
+                    }
+                    <Text style={styles.linkCardArrow}>↓</Text>
                 </TouchableOpacity>
 
                 {/* Passwort ändern */}
                 <TouchableOpacity style={styles.linkCard} onPress={() => setShowPasswort(!showPasswort)}>
                     <Text style={styles.linkCardText}>🔑  Passwort ändern</Text>
-                    <Text style={styles.linkCardArrow}>{showPasswort ? '↑' : '→'}</Text>
+                    <Text style={styles.linkCardArrow}>{showPasswort ? '↑' : '↓'}</Text>
                 </TouchableOpacity>
 
                 {showPasswort && (

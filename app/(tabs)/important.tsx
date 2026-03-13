@@ -7,6 +7,12 @@ import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } fr
 
 const API_URL = "http://10.0.2.2:3000";
 
+const CARD_COLORS: Record<string, string> = {
+    'nie': '#9FBDDB',
+    'wöchentlich': '#9FDBBD',
+    '2-wöchentlich': '#C49FDB',
+};
+
 
 const Important = () => {
       type Entry = {
@@ -22,7 +28,15 @@ const Important = () => {
         wiederholung?: 'nie' | 'wöchentlich' | '2-wöchentlich';
     };
 
+    type Announcement = {
+        _id: string;
+        title: string;
+        message: string;
+        createdAt: string;
+    };
+
     const [entries, setEntries] = useState<Entry[]>([]);
+    const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
     const unmarkWichtig = (id: string, title: string) => {
         Alert.alert('Achtung!', `"${title}" wirklich aus wichtigen Terminen entfernen?`, [
@@ -45,11 +59,20 @@ const Important = () => {
         useCallback(() => {
             const load = async () => {
                 const userId = await getUserId();
-                const res = await fetch(`${API_URL}/entries?userId=${userId}`);
-                const data = await res.json();
+                const [entriesRes, announcementsRes] = await Promise.all([
+                    fetch(`${API_URL}/entries?userId=${userId}`),
+                    fetch(`${API_URL}/announcements`),
+                ]);
+                const entriesData = await entriesRes.json();
+                const announcementsData = await announcementsRes.json();
                 const todayStart = new Date();
                 todayStart.setHours(0, 0, 0, 0);
-                setEntries(data.filter((e: Entry) => e.wichtig && new Date(e.datum) >= todayStart));
+                setEntries(entriesData.filter((e: Entry) => e.wichtig && (
+                    e.wiederholung && e.wiederholung !== 'nie'
+                        ? true
+                        : new Date(e.datum) >= todayStart
+                )));
+                setAnnouncements(announcementsData);
             };
             load();
         }, [])
@@ -63,8 +86,22 @@ const Important = () => {
                         style= {styles.hawLogo}
                         resizeMode='contain'
                     />
-                    <Text style={styles.title}>Wichtige Termine</Text>
+                    <Text style={styles.title}>Wichtige Termine &amp; Meldungen</Text>
 
+
+                    {announcements.length > 0 && (
+                        <View>
+                            <Text style={[styles.title, { color: '#c0392b', marginBottom: 8 }]}>Admin-Meldungen</Text>
+                            {announcements.map(a => (
+                                <View key={a._id} style={styles.announcementCard}>
+                                    <Text style={styles.announcementTitle}>{a.title}</Text>
+                                    <Text style={styles.announcementText}>{a.message}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    )}
+
+                    <Text style={[styles.title, { marginTop: announcements.length > 0 ? 16 : 0 }]}>Meine wichtigen Termine</Text>
 
                     {entries.length === 0 ? (
                 <Text style={{ marginTop: 16 }}>Keine wichtigen Termine 🎉</Text>
@@ -79,6 +116,8 @@ const Important = () => {
                             `Zeit: ${ev.zeitVon ?? '??'} - ${ev.zeitBis ?? '??'} Uhr`,
                             ...(ev.wiederholung && ev.wiederholung !== 'nie' ? [`${ev.wiederholung}`] : []),
                         ]}
+                        cardColor={CARD_COLORS[ev.wiederholung ?? 'nie']}
+                        titleColor='#E67E22'
                     >
                         <Text style={{ color: '#002E99' }}>Notizen:</Text>
                         <Text style={{ color: '#002E99' }}>{ev.notizen?.trim() ? ev.notizen : '-'}</Text>
@@ -125,5 +164,23 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 12,
         fontWeight: '600',
+    },
+    announcementCard: {
+        backgroundColor: '#fdecea',
+        borderLeftWidth: 4,
+        borderLeftColor: '#c0392b',
+        borderRadius: 10,
+        padding: 12,
+        marginBottom: 10,
+    },
+    announcementTitle: {
+        color: '#c0392b',
+        fontWeight: '700',
+        fontSize: 14,
+        marginBottom: 4,
+    },
+    announcementText: {
+        color: '#333',
+        fontSize: 13,
     },
 })

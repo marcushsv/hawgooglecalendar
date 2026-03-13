@@ -5,6 +5,12 @@ import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, StyleShe
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const DAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr'];
+
+const CARD_COLORS: Record<string, string> = {
+    'nie': '#9FDBBD',
+    'wöchentlich': '#9FBDDB',
+    '2-wöchentlich': '#C49FDB',
+};
 const HOURS = Array.from({ length: 11 }, (_, i) => i + 8); // 8:00 - 18:00
 const GRID_START = 8;
 const CELL_HEIGHT = 70;
@@ -50,6 +56,55 @@ const displayToISO = (display: string) => {
 const toDecimalHour = (time: string) => {
     const [h, m] = time.split(':').map(Number);
     return h + m / 60;
+};
+
+const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+const overlapsTime = (a: any, b: any) =>
+    toMin(a.zeitVon) < toMin(b.zeitBis) && toMin(a.zeitBis) > toMin(b.zeitVon);
+
+// Returns layout info for each entry: colIndex and totalCols within its overlap group
+const computeDayLayout = (dayEntries: any[]): { entry: any; colIndex: number; totalCols: number }[] => {
+    if (dayEntries.length === 0) return [];
+
+    // Union-Find to group overlapping entries into connected components
+    const parent = dayEntries.map((_, i) => i);
+    const find = (i: number): number => parent[i] === i ? i : (parent[i] = find(parent[i]));
+    const union = (a: number, b: number) => { parent[find(a)] = find(b); };
+    for (let i = 0; i < dayEntries.length; i++)
+        for (let j = i + 1; j < dayEntries.length; j++)
+            if (overlapsTime(dayEntries[i], dayEntries[j])) union(i, j);
+
+    // Build groups
+    const groups = new Map<number, number[]>();
+    for (let i = 0; i < dayEntries.length; i++) {
+        const root = find(i);
+        if (!groups.has(root)) groups.set(root, []);
+        groups.get(root)!.push(i);
+    }
+
+    const result: { entry: any; colIndex: number; totalCols: number }[] = new Array(dayEntries.length);
+
+    groups.forEach(group => {
+        group.sort((a, b) => toMin(dayEntries[a].zeitVon) - toMin(dayEntries[b].zeitVon));
+        const lanes: number[][] = [];
+        const entryLane: Record<number, number> = {};
+        for (const i of group) {
+            let placed = false;
+            for (let l = 0; l < lanes.length; l++) {
+                if (!lanes[l].some(j => overlapsTime(dayEntries[i], dayEntries[j]))) {
+                    lanes[l].push(i);
+                    entryLane[i] = l;
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed) { entryLane[i] = lanes.length; lanes.push([i]); }
+        }
+        const totalCols = lanes.length;
+        for (const i of group) result[i] = { entry: dayEntries[i], colIndex: entryLane[i], totalCols };
+    });
+
+    return result;
 };
 
 // Prüft ob ein Entry an einem bestimmten Tag (dayDate) gezeigt werden soll
@@ -253,14 +308,17 @@ const Stundenplan = () => {
                                                     style={[styles.hourLine, { top: (hour - GRID_START) * CELL_HEIGHT }]}
                                                 />
                                             ))}
-                                            {dayEntries.map((e) => {
+                                            {computeDayLayout(dayEntries).map(({ entry: e, colIndex, totalCols }) => {
                                                 const start = toDecimalHour(e.zeitVon);
                                                 const end = toDecimalHour(e.zeitBis);
                                                 const top = (start - GRID_START) * CELL_HEIGHT;
                                                 const height = (end - start) * CELL_HEIGHT - 1;
+                                                const slotWidth = (86) / totalCols;
+                                                const left = 2 + colIndex * slotWidth;
+                                                const width = slotWidth - 1;
                                                 return (
-                                                    <Pressable key={e._id} onLongPress={() => openEdit(e)} style={[styles.eventCard, { top, height }]}>
-                                                        <Text style={styles.eventTitle} numberOfLines={2}>{e.title}</Text>
+                                                    <Pressable key={e._id} onLongPress={() => openEdit(e)} style={[styles.eventCard, { top, height, left, width, backgroundColor: CARD_COLORS[e.wiederholung ?? 'nie'] }]}>
+                                                        <Text style={[styles.eventTitle, e.wichtig && { color: '#E67E22' }]} numberOfLines={2}>{e.title}</Text>
                                                         {e.raum ? <Text style={styles.eventSub}>{e.raum}</Text> : null}
                                                         <Text style={styles.eventSub}>{e.zeitVon} - {e.zeitBis}</Text>
                                                     </Pressable>
@@ -412,8 +470,6 @@ const styles = StyleSheet.create({
     },
     eventCard: {
         position: 'absolute',
-        left: 2,
-        right: 2,
         backgroundColor: '#9FBDDB',
         borderRadius: 8,
         padding: 4,
