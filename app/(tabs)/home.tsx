@@ -1,6 +1,8 @@
 import { BlueDataCard } from '@/components/BlueDataCard';
 import { getUserId } from '@/utils/auth';
+import { scheduleNotificationsForEntries } from '@/utils/notifications';
 import { useFocusEffect } from '@react-navigation/native';
+import * as Notifications from 'expo-notifications';
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,7 +12,7 @@ const API_URL = "http://10.0.2.2:3000";
 const CARD_COLORS: Record<string, string> = {
   'nie': '#9FBDDB',
   'wöchentlich': '#9FDBBD',
-  '2-wöchentlich': '#C49FDB',
+  '2-wöchentlich': '#DDD4A8',
 };
 
 type Entry = {
@@ -41,6 +43,16 @@ const isoToDisplay = (iso: string) => {
   return `${d}.${m}.${y}`;
 };
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
 const Home = () => {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,6 +71,7 @@ const Home = () => {
   const [editNotiz, setEditNotiz] = useState('');
   const [editWiederholung, setEditWiederholung] = useState<'nie' | 'wöchentlich' | '2-wöchentlich'>('nie');
   const [editSaving, setEditSaving] = useState(false);
+  const [legendVisible, setLegendVisible] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -68,6 +81,7 @@ const Home = () => {
       if (!res.ok) throw new Error("Entries konnten nicht geladen werden");
       const data = await res.json();
       setEntries(data);
+      scheduleNotificationsForEntries(data);
     } catch (e) {
       console.log(e);
     } finally {
@@ -269,7 +283,12 @@ const Home = () => {
             style={styles.hawLogo}
             resizeMode='contain'
           />
-          <Text style={styles.title}>Willkommen zu deinem Kalender</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20 }}>
+            <Text style={[styles.title, { marginTop: 0, flex: 1 }]}>Willkommen zu deinem Kalender</Text>
+            <TouchableOpacity onPress={() => setLegendVisible(true)} style={styles.infoBtn}>
+              <Text style={styles.infoBtnText}>ℹ</Text>
+            </TouchableOpacity>
+          </View>
 
           {/* Suchleiste */}
           <TextInput
@@ -291,6 +310,34 @@ const Home = () => {
           {renderEntries()}
         </View>
       </ScrollView>
+
+      {/* Farblegende Modal */}
+      <Modal visible={legendVisible} transparent animationType="fade" onRequestClose={() => setLegendVisible(false)}>
+        <TouchableOpacity style={styles.legendOverlay} activeOpacity={1} onPress={() => setLegendVisible(false)}>
+          <View style={styles.legendBox}>
+            <Text style={styles.legendTitle}>Farblegende</Text>
+            <View style={styles.legendRow}>
+              <View style={[styles.legendDot, { backgroundColor: '#9FBDDB' }]} />
+              <Text style={styles.legendLabel}>Einmalig</Text>
+            </View>
+            <View style={styles.legendRow}>
+              <View style={[styles.legendDot, { backgroundColor: '#9FDBBD' }]} />
+              <Text style={styles.legendLabel}>Wöchentlich</Text>
+            </View>
+            <View style={styles.legendRow}>
+              <View style={[styles.legendDot, { backgroundColor: '#DDD4A8' }]} />
+              <Text style={styles.legendLabel}>Alle 2 Wochen</Text>
+            </View>
+            <View style={styles.legendRow}>
+              <View style={[styles.legendDot, { backgroundColor: '#E67E22', borderRadius: 4 }]} />
+              <Text style={styles.legendLabel}>Als wichtig markiert</Text>
+            </View>
+            <TouchableOpacity style={styles.legendClose} onPress={() => setLegendVisible(false)}>
+              <Text style={styles.legendCloseText}>Schließen</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Edit Modal */}
       <Modal visible={editVisible} animationType="slide" transparent={false} onRequestClose={() => setEditVisible(false)}>
@@ -361,10 +408,10 @@ const Home = () => {
 export default Home;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'white' },
+  container: { flex: 1, backgroundColor: 'white'},
   contentContainer: { padding: 20, paddingBottom: 40 },
   title: { fontSize: 20, fontWeight: "500", marginTop: 20, textAlign: 'left', color: '#3a38ac' },
-  hawLogo: { width: 120, height: 50, alignSelf: 'flex-end' },
+  hawLogo: { width: 120, height: 60, alignSelf: 'flex-end' },
   searchInput: {
     backgroundColor: '#EEF3F8',
     borderRadius: 20,
@@ -416,4 +463,39 @@ const styles = StyleSheet.create({
     alignItems: 'center', marginTop: 10, width: '60%', alignSelf: 'center',
   },
   btnSaveText: { color: 'white', fontSize: 16, fontWeight: '600' },
+  infoBtn: {
+    backgroundColor: '#EEF3F8',
+    borderRadius: 20,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  infoBtnText: { color: '#002E99', fontSize: 16, fontWeight: '600' },
+  legendOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  legendBox: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 24,
+    width: '80%',
+  },
+  legendTitle: { fontSize: 16, fontWeight: '600', color: '#002E99', marginBottom: 16 },
+  legendRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  legendDot: { width: 20, height: 20, borderRadius: 10, marginRight: 12 },
+  legendLabel: { color: '#002E99', fontSize: 14 },
+  legendClose: {
+    marginTop: 16,
+    alignSelf: 'center',
+    backgroundColor: '#002E99',
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+  },
+  legendCloseText: { color: 'white', fontWeight: '600' },
 });

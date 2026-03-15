@@ -3,6 +3,7 @@ import { getUserId } from '@/utils/auth';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 const API_URL = "http://10.0.2.2:3000";
@@ -10,7 +11,7 @@ const API_URL = "http://10.0.2.2:3000";
 const CARD_COLORS: Record<string, string> = {
     'nie': '#9FBDDB',
     'wöchentlich': '#9FDBBD',
-    '2-wöchentlich': '#C49FDB',
+    '2-wöchentlich': '#DDD4A8',
 };
 
 
@@ -79,10 +80,11 @@ const Important = () => {
     );
 
     return (
+        <SafeAreaView style={styles.safeArea}>
          <ScrollView style={styles.container}>
-            <View style={{ paddingTop: 65 }}>
+            <View>
                     <Image
-                        source={require("../../assets/images/HAW_Logo.jpg")} 
+                        source={require("../../assets/images/HAW_Logo.jpg")}
                         style= {styles.hawLogo}
                         resizeMode='contain'
                     />
@@ -128,23 +130,26 @@ const Important = () => {
                 ))
             )}
             </View>
-                </ScrollView>
-
+        </ScrollView>
+        </SafeAreaView>
     )
 }
 
 export default Important
 
 const styles = StyleSheet.create({
+    safeArea: {
+        flex: 1,
+        backgroundColor: 'white',
+    },
     container: {
         padding: 20,
-        backgroundColor: 'white'
+        backgroundColor: 'white',
     },
-     hawLogo: {
-        width:120,
-        height:50,
-        alignSelf:'flex-end'
-
+    hawLogo: {
+        width: 120,
+        height: 60,
+        alignSelf: 'flex-end',
     },
     title: {
         fontSize: 20,

@@ -498,50 +498,6 @@ const AdminDashboard = () => {
             <View style={styles.container}>
                 <Text style={styles.title}>Admin Dashboard</Text>
 
-                {/* Tabs */}
-                <View style={styles.tabRow}>
-                    <TouchableOpacity
-                        style={[styles.tab, activeTab === 'erstellen' && styles.tabActive]}
-                        onPress={() => setActiveTab('erstellen')}
-                    >
-                        <Text style={[styles.tabText, activeTab === 'erstellen' && styles.tabTextActive]}>
-                            Eintrag erstellen
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.tab, activeTab === 'verwalten' && styles.tabActive]}
-                        onPress={() => setActiveTab('verwalten')}
-                    >
-                        <Text style={[styles.tabText, activeTab === 'verwalten' && styles.tabTextActive]}>
-                            Verwalten
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.tab, activeTab === 'import' && styles.tabActive]}
-                        onPress={() => setActiveTab('import')}
-                    >
-                        <Text style={[styles.tabText, activeTab === 'import' && styles.tabTextActive]}>
-                            CSV Import
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.tab, activeTab === 'meldungen' && styles.tabActive]}
-                        onPress={() => setActiveTab('meldungen')}
-                    >
-                        <Text style={[styles.tabText, activeTab === 'meldungen' && styles.tabTextActive]}>
-                            Meldungen
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.tab, activeTab === 'user' && styles.tabActive]}
-                        onPress={() => setActiveTab('user')}
-                    >
-                        <Text style={[styles.tabText, activeTab === 'user' && styles.tabTextActive]}>
-                            User
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-
                 <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
 
                     {/* === ERSTELLEN === */}
@@ -868,10 +824,54 @@ const AdminDashboard = () => {
                         </View>
                     )}
 
-                    <TouchableOpacity style={styles.logoutButton} onPress={() => router.push('/login')}>
+                    <TouchableOpacity style={styles.logoutButton} onPress={() => router.replace('/')}>
                         <Text style={styles.logoutButtonText}>Ausloggen</Text>
                     </TouchableOpacity>
                 </ScrollView>
+
+                {/* Tabs */}
+                <View style={styles.tabRow}>
+                    <TouchableOpacity
+                        style={[styles.tab, activeTab === 'erstellen' && styles.tabActive]}
+                        onPress={() => setActiveTab('erstellen')}
+                    >
+                        <Text style={[styles.tabText, activeTab === 'erstellen' && styles.tabTextActive]}>
+                            Erstellen
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.tab, activeTab === 'verwalten' && styles.tabActive]}
+                        onPress={() => setActiveTab('verwalten')}
+                    >
+                        <Text style={[styles.tabText, activeTab === 'verwalten' && styles.tabTextActive]}>
+                            Verwalten
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.tab, activeTab === 'import' && styles.tabActive]}
+                        onPress={() => setActiveTab('import')}
+                    >
+                        <Text style={[styles.tabText, activeTab === 'import' && styles.tabTextActive]}>
+                            CSV Import
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.tab, activeTab === 'meldungen' && styles.tabActive]}
+                        onPress={() => setActiveTab('meldungen')}
+                    >
+                        <Text style={[styles.tabText, activeTab === 'meldungen' && styles.tabTextActive]}>
+                            Meldungen
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.tab, activeTab === 'user' && styles.tabActive]}
+                        onPress={() => setActiveTab('user')}
+                    >
+                        <Text style={[styles.tabText, activeTab === 'user' && styles.tabTextActive]}>
+                            User
+                        </Text>
+                    </TouchableOpacity>
+                </View>
             </View>
             {/* === USER EDIT MODAL === */}
             <Modal visible={!!editUser} animationType="slide" transparent onRequestClose={() => setEditUser(null)}>
@@ -977,10 +977,10 @@ const styles = StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: 'white' },
     container: { flex: 1, padding: 20 },
     title: { color: '#002E99', fontSize: 22, fontWeight: '700', marginBottom: 16, textAlign: 'center' },
-    tabRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
-    tab: { flex: 1, backgroundColor: '#C5D7EA', borderRadius: 20, padding: 10, alignItems: 'center' },
+    tabRow: { flexDirection: 'row', gap: 6, marginTop: 10, paddingBottom: 4 },
+    tab: { flex: 1, backgroundColor: '#C5D7EA', borderRadius: 20, paddingVertical: 8, paddingHorizontal: 4, alignItems: 'center' },
     tabActive: { backgroundColor: '#002E99' },
-    tabText: { color: '#002E99', fontWeight: '500', fontSize: 13 },
+    tabText: { color: '#002E99', fontWeight: '500', fontSize: 10 },
     tabTextActive: { color: 'white' },
     scroll: { flex: 1 },
     card: { backgroundColor: '#9FBDDB', borderRadius: 15, padding: 16, marginBottom: 16 },

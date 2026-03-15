@@ -16,7 +16,14 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.READ_CALENDAR",
+        "android.permission.WRITE_CALENDAR",
+        "android.permission.READ_CALENDAR",
+        "android.permission.WRITE_CALENDAR"
+      ],
+      "package": "com.anonymous.hawgooglecalendar"
     },
     "web": {
       "bundler": "metro",
@@ -35,7 +42,21 @@
         }
       ],
       "expo-web-browser",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "Zugriff auf deinen Kalender wird benötigt, um Vorlesungen hinzuzufügen."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#002E99",
+          "sounds": []
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

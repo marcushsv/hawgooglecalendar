@@ -200,9 +200,10 @@ const AddEvent: React.FC = () => {
         await doSave();
     };
 
+    const WEEKDAYS = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
     const formatDate = (isoString: string) => {
         const d = new Date(isoString);
-        return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
+        return WEEKDAYS[d.getDay()];
     };
 
     return (
@@ -213,7 +214,7 @@ const AddEvent: React.FC = () => {
                     style={styles.hawLogo}
                     resizeMode='contain'
                 />
-
+                <View style={{ height: 15 }}></View> 
                 <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false}>
                     <View style={styles.card}>
                         {/* Tabs */}
@@ -371,8 +372,8 @@ export default AddEvent;
 
 const styles = StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: 'white' },
-    container: { flex: 1, padding: 20 },
-    hawLogo: { width: 120, height: 50, alignSelf: 'flex-end' },
+    container: { flex: 1, padding: 20, paddingTop: 5 },
+    hawLogo: { width: 120, height: 60, alignSelf: 'flex-end' },
     scrollArea: { flex: 1, marginTop: 20 },
     card: {
         backgroundColor: '#9FBDDB',

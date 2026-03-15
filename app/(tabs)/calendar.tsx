@@ -9,7 +9,7 @@ const DAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr'];
 const CARD_COLORS: Record<string, string> = {
     'nie': '#9FDBBD',
     'wöchentlich': '#9FBDDB',
-    '2-wöchentlich': '#C49FDB',
+    '2-wöchentlich': '#DDD4A8',
 };
 const HOURS = Array.from({ length: 11 }, (_, i) => i + 8); // 8:00 - 18:00
 const GRID_START = 8;
@@ -409,7 +409,7 @@ export default Stundenplan;
 const styles = StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: 'white' },
     topBar: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 8 },
-    hawLogo: { width: 120, height: 50, alignSelf: 'flex-end' },
+    hawLogo: { width: 120, height: 60, alignSelf: 'flex-end' },
     weekNav: {
         flexDirection: 'row',
         alignItems: 'center',

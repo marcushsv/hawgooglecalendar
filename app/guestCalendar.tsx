@@ -40,6 +40,52 @@ const toDecimalHour = (time: string) => {
     return h + m / 60;
 };
 
+const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+const overlapsTime = (a: any, b: any) =>
+    toMin(a.zeitVon) < toMin(b.zeitBis) && toMin(a.zeitBis) > toMin(b.zeitVon);
+
+const computeDayLayout = (dayEntries: any[]): { entry: any; colIndex: number; totalCols: number }[] => {
+    if (dayEntries.length === 0) return [];
+
+    const parent = dayEntries.map((_, i) => i);
+    const find = (i: number): number => parent[i] === i ? i : (parent[i] = find(parent[i]));
+    const union = (a: number, b: number) => { parent[find(a)] = find(b); };
+    for (let i = 0; i < dayEntries.length; i++)
+        for (let j = i + 1; j < dayEntries.length; j++)
+            if (overlapsTime(dayEntries[i], dayEntries[j])) union(i, j);
+
+    const groups = new Map<number, number[]>();
+    for (let i = 0; i < dayEntries.length; i++) {
+        const root = find(i);
+        if (!groups.has(root)) groups.set(root, []);
+        groups.get(root)!.push(i);
+    }
+
+    const result: { entry: any; colIndex: number; totalCols: number }[] = new Array(dayEntries.length);
+
+    groups.forEach(group => {
+        group.sort((a, b) => toMin(dayEntries[a].zeitVon) - toMin(dayEntries[b].zeitVon));
+        const lanes: number[][] = [];
+        const entryLane: Record<number, number> = {};
+        for (const i of group) {
+            let placed = false;
+            for (let l = 0; l < lanes.length; l++) {
+                if (!lanes[l].some(j => overlapsTime(dayEntries[i], dayEntries[j]))) {
+                    lanes[l].push(i);
+                    entryLane[i] = l;
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed) { entryLane[i] = lanes.length; lanes.push([i]); }
+        }
+        const totalCols = lanes.length;
+        for (const i of group) result[i] = { entry: dayEntries[i], colIndex: entryLane[i], totalCols };
+    });
+
+    return result;
+};
+
 const isEntryOnDay = (entry: any, dayDate: Date): boolean => {
     const entryDate = new Date(entry.datum);
     entryDate.setHours(0, 0, 0, 0);
@@ -120,7 +166,7 @@ const GuestCalendar = () => {
                 />
             </View>
 
-            <View style={{ height: 55 }} />
+            <View style={{ height: 30 }} />
 
             {/* Auswahl-Card */}
             <View style={styles.selectionCard}>
@@ -143,6 +189,7 @@ const GuestCalendar = () => {
 
                 {/* Fachsemester */}
                 <View style={styles.pickerRow}>
+                    <Text style={{ color: '#002E99', fontSize: 14, marginRight: 6 }}>Semester:</Text>
                     {FACHSEMESTER_OPTIONS.map(sem => (
                         <TouchableOpacity
                             key={sem}
@@ -227,16 +274,19 @@ const GuestCalendar = () => {
                                                     {HOURS.slice(0, -1).map(hour => (
                                                         <View key={hour} style={[styles.hourLine, { top: (hour - GRID_START) * CELL_HEIGHT }]} />
                                                     ))}
-                                                    {dayEntries.map(e => {
+                                                    {computeDayLayout(dayEntries).map(({ entry: e, colIndex, totalCols }) => {
                                                         const start = toDecimalHour(e.zeitVon);
                                                         const end = toDecimalHour(e.zeitBis);
                                                         const top = (start - GRID_START) * CELL_HEIGHT;
                                                         const height = (end - start) * CELL_HEIGHT - 1;
+                                                        const slotWidth = 86 / totalCols;
+                                                        const left = 2 + colIndex * slotWidth;
+                                                        const width = slotWidth - 1;
                                                         return (
                                                             <Pressable
                                                                 key={e._id}
                                                                 onPress={() => { setDetailEntry(e); setDetailVisible(true); }}
-                                                                style={[styles.eventCard, { top, height }]}
+                                                                style={[styles.eventCard, { top, height, left, width }]}
                                                             >
                                                                 <Text style={styles.eventTitle} numberOfLines={2}>{e.title}</Text>
                                                                 {e.raum ? <Text style={styles.eventSub}>{e.raum}</Text> : null}
@@ -388,7 +438,7 @@ const styles = StyleSheet.create({
     dayColumn: { width: 90, marginHorizontal: 2, position: 'relative' },
     hourLine: { position: 'absolute', left: 0, right: 0, height: 1, backgroundColor: '#d3dce4' },
     eventCard: {
-        position: 'absolute', left: 2, right: 2,
+        position: 'absolute',
         backgroundColor: '#9FBDDB',
         borderRadius: 8, padding: 4, overflow: 'hidden',
     },
