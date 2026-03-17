@@ -824,9 +824,12 @@ const AdminDashboard = () => {
                         </View>
                     )}
 
-                    <TouchableOpacity style={styles.logoutButton} onPress={() => router.replace('/')}>
-                        <Text style={styles.logoutButtonText}>Ausloggen</Text>
-                    </TouchableOpacity>
+                    {activeTab === 'user' && (
+                        <TouchableOpacity style={styles.logoutButton} onPress={() => router.replace('/')}>
+                            <Text style={styles.logoutButtonText}>Ausloggen</Text>
+                        </TouchableOpacity>
+                    )}
+
                 </ScrollView>
 
                 {/* Tabs */}

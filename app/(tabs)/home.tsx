@@ -10,8 +10,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const API_URL = "http://10.0.2.2:3000";
 
 const CARD_COLORS: Record<string, string> = {
-  'nie': '#9FBDDB',
-  'wöchentlich': '#9FDBBD',
+  'nie': '#9FDBBD' ,
+  'wöchentlich':  '#9FBDDB',
   '2-wöchentlich': '#DDD4A8',
 };
 
@@ -317,11 +317,11 @@ const Home = () => {
           <View style={styles.legendBox}>
             <Text style={styles.legendTitle}>Farblegende</Text>
             <View style={styles.legendRow}>
-              <View style={[styles.legendDot, { backgroundColor: '#9FBDDB' }]} />
+              <View style={[styles.legendDot, { backgroundColor: '#9FDBBD' }]} />
               <Text style={styles.legendLabel}>Einmalig</Text>
             </View>
             <View style={styles.legendRow}>
-              <View style={[styles.legendDot, { backgroundColor: '#9FDBBD' }]} />
+              <View style={[styles.legendDot, { backgroundColor: '#9FBDDB' }]} />
               <Text style={styles.legendLabel}>Wöchentlich</Text>
             </View>
             <View style={styles.legendRow}>
