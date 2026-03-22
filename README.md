@@ -1,50 +1,85 @@
-# Welcome to your Expo app 👋
+# HAW Kalender App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Eine mobile Kalender-App für Studierende der HAW Hamburg (Hochschule für Angewandte Wissenschaften), entwickelt mit React Native / Expo.
 
-## Get started
+## Features
 
-1. Install dependencies
+**Für Studierende**
+- Kursplan nach Semester und Studiengang durchsuchen und abonnieren
+- Eigene Kalendereinträge erstellen (einmalig, wöchentlich, zweiwöchentlich)
+- Wochen-Kalenderansicht mit farbkodierten Einträgen
+- Einträge als „wichtig" markieren
+- Push-Benachrichtigungen für bevorstehende Termine
 
-   ```bash
-   npm install
-   ```
+**Für Admins**
+- Kurse erstellen, bearbeiten, löschen und als Bulk-Import hinzufügen
+- Nutzerverwaltung (Rollen, Passwörter, Konten)
+- Ankündigungen an alle Nutzer senden
 
-2. Start the app
+**Für Gäste**
+- Kursplan ohne Login einsehen
 
-   ```bash
-   npx expo start
-   ```
+## Tech Stack
 
-In the output, you'll find options to open the app in a
+| Bereich | Technologie |
+|---|---|
+| Frontend | React Native, Expo, Expo Router, TypeScript |
+| Backend | Express.js, MongoDB, Mongoose |
+| Auth | JWT, bcryptjs, expo-secure-store |
+| UI | react-native-calendars, Reanimated |
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Voraussetzungen
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- Node.js
+- MongoDB (lokal oder Atlas)
+- Expo CLI (`npm install -g expo-cli`)
 
-## Get a fresh project
-
-When you're ready, run:
+## Installation
 
 ```bash
-npm run reset-project
+# Dependencies installieren
+npm install
+
+# Backend starten
+cd haw_backend
+node index.js
+
+# App starten
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Die App kann im [Expo Go](https://expo.dev/go), im Android-Emulator oder iOS-Simulator geöffnet werden.
 
-## Learn more
+## Projektstruktur
 
-To learn more about developing your project with Expo, look at the following resources:
+```
+hawgooglecalendarr/
+├── app/
+│   ├── (tabs)/          # Haupt-Tabs: Home, Kalender, Eintrag hinzufügen, Wichtig, Profil
+│   ├── admin.tsx         # Admin-Dashboard
+│   ├── login.tsx
+│   ├── register.tsx
+│   └── guestCalendar.tsx
+├── haw_backend/
+│   ├── index.js          # Express-Server & API-Routen
+│   └── models/           # Mongoose-Schemas: User, Entry, CourseEntry, Announcement
+├── components/           # Wiederverwendbare UI-Komponenten
+├── utils/                # Auth-Hilfsfunktionen, Notifications
+└── constants/            # Farben & App-Konstanten
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Umgebungsvariablen
 
-## Join the community
+Im `haw_backend/`-Ordner eine `.env`-Datei anlegen:
 
-Join our community of developers creating universal apps.
+```env
+MONGO_URI=mongodb://localhost:27017/hawkalender
+JWT_SECRET=dein_geheimes_jwt_secret
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Admin-Account erstellen
+
+```bash
+cd haw_backend
+node createAdmin.js
+```
