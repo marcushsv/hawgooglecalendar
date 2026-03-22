@@ -24,6 +24,12 @@ interface CourseEntry {
     wiederholung?: string;
 }
 
+const CARD_COLORS: Record<string, string> = {
+    'nie': '#9FDBBD',
+    'wöchentlich': '#9FBDDB',
+    '2-wöchentlich': '#DDD4A8',
+};
+
 const AddEvent: React.FC = () => {
     const API_URL = "http://10.0.2.2:3000";
     const [activeTab, setActiveTab] = useState<'kurssuche' | 'eigener'>('kurssuche');
@@ -278,7 +284,7 @@ const AddEvent: React.FC = () => {
                                 {courseResults.length > 0 && (
                                     <View style={styles.resultsList}>
                                         {courseResults.map(course => (
-                                            <View key={course._id} style={styles.resultItem}>
+                                            <View key={course._id} style={[styles.resultItem, { backgroundColor: CARD_COLORS[course.wiederholung || 'nie'] || '#C5D7EA' }]}>
                                                 <View style={styles.resultInfo}>
                                                     <Text style={styles.resultTitle}>{course.title}</Text>
                                                     <Text style={styles.resultMeta}>
@@ -448,6 +454,9 @@ const styles = StyleSheet.create({
     resultsList: {
         marginTop: 12,
         gap: 8,
+        backgroundColor: '#7A9DC0',
+        borderRadius: 12,
+        padding: 10,
     },
     resultItem: {
         backgroundColor: '#C5D7EA',

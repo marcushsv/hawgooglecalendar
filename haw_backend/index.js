@@ -21,10 +21,29 @@ mongoose.connect(process.env.ATLAS_URI)
 // Alle Einträge abrufen
 app.get('/entries', async (req, res) => {
   try {
-    const userId = req.query.userId; // ← aus Query-Parameter
+    const userId = req.query.userId;
     const filter = userId ? { userId } : {};
-    const entries = await Entry.find(filter).sort({ datum: 1 });
+    let entries = await Entry.find(filter).sort({ datum: 1 });
+    if (userId) {
+      const user = await User.findById(userId).select('hiddenEntries');
+      if (user?.hiddenEntries?.length) {
+        const hidden = new Set(user.hiddenEntries.map(String));
+        entries = entries.filter(e => !hidden.has(String(e._id)));
+      }
+    }
     res.json(entries);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Entry für einen User ausblenden (statt echtes Löschen)
+app.post('/users/:userId/hide-entry/:entryId', async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.params.userId, {
+      $addToSet: { hiddenEntries: req.params.entryId }
+    });
+    res.json({ message: 'Ausgeblendet' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -16,3 +16,11 @@ export const getToken = async () => {
         return await SecureStore.getItemAsync('token');
     }
 };
+
+export const getRole = async () => {
+    if (Platform.OS === 'web') {
+        return localStorage.getItem('role');
+    } else {
+        return await SecureStore.getItemAsync('role');
+    }
+};

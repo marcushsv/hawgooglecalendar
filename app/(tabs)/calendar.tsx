@@ -1,4 +1,4 @@
-import { getUserId } from '@/utils/auth';
+import { getRole, getUserId } from '@/utils/auth';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -176,8 +176,13 @@ const Stundenplan = () => {
         load();
     }, []));
 
-    const deleteEntry = (id: string) => {
-        fetch(`${API_URL}/entries/${id}`, { method: 'DELETE' })
+    const deleteEntry = async (id: string) => {
+        const [userId, role] = await Promise.all([getUserId(), getRole()]);
+        const url = role === 'admin'
+            ? `${API_URL}/entries/${id}`
+            : `${API_URL}/users/${userId}/hide-entry/${id}`;
+        const method = role === 'admin' ? 'DELETE' : 'POST';
+        fetch(url, { method })
             .then(() => {
                 setEntries(prev => prev.filter(e => e._id !== id));
                 setEditVisible(false);

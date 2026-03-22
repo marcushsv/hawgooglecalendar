@@ -9,8 +9,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const API_URL = "http://10.0.2.2:3000";
 
 const CARD_COLORS: Record<string, string> = {
-    'nie': '#9FBDDB',
-    'wöchentlich': '#9FDBBD',
+    'nie':  '#9FDBBD',
+    'wöchentlich': '#9FBDDB',
     '2-wöchentlich': '#DDD4A8',
 };
 

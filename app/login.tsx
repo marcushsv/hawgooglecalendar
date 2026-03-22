@@ -22,17 +22,19 @@ const Login = () => {
             });
             const data = await res.json();
             if (!res.ok) { Alert.alert('Fehler', data.error); return; }
-            const saveToken = async (token: string, userId: string) => {
+            const saveToken = async (token: string, userId: string, role: string) => {
                 if (Platform.OS === 'web') {
                     localStorage.setItem('token', token);
                     localStorage.setItem('userId', userId);
+                    localStorage.setItem('role', role);
                 } else {
                     await SecureStore.setItemAsync('token', token);
                     await SecureStore.setItemAsync('userId', userId);
+                    await SecureStore.setItemAsync('role', role);
                 }
             };
             Alert.alert('Willkommen!', `Hallo ${data.user.vorname}!`);
-            await saveToken(data.token, data.user._id);
+            await saveToken(data.token, data.user._id, data.user.role);
             router.push('/home');
         } catch (e: any) {
             Alert.alert('Netzwerkfehler', e?.message);
