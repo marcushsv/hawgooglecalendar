@@ -40,7 +40,6 @@ const getToken = async () => {
 };
 
 const AdminDashboard = () => {
-    // Form state
     const [title, setTitle] = useState('');
     const [fachsemester, setFachsemester] = useState<number | null>(null);
     const [studiengang, setStudiengang] = useState('');
@@ -54,7 +53,6 @@ const AdminDashboard = () => {
     const [wiederholung, setWiederholung] = useState<'nie' | 'wöchentlich' | '2-wöchentlich'>('nie');
     const [saving, setSaving] = useState(false);
 
-    // List state
     const [entries, setEntries] = useState<CourseEntry[]>([]);
     const [loadingEntries, setLoadingEntries] = useState(false);
     const [filterFS, setFilterFS] = useState<number | null>(null);
@@ -63,7 +61,6 @@ const AdminDashboard = () => {
 
     const [activeTab, setActiveTab] = useState<'erstellen' | 'verwalten' | 'import' | 'meldungen' | 'user'>('erstellen');
 
-    // Edit Modal state
     const [editEntry, setEditEntry] = useState<CourseEntry | null>(null);
     const [editTitle, setEditTitle] = useState('');
     const [editFachsemester, setEditFachsemester] = useState<number | null>(null);
@@ -78,7 +75,6 @@ const AdminDashboard = () => {
     const [editWiederholung, setEditWiederholung] = useState<'nie' | 'wöchentlich' | '2-wöchentlich'>('nie');
     const [editSaving, setEditSaving] = useState(false);
 
-    // Meldungen state
     const [meldungTitle, setMeldungTitle] = useState('');
     const [meldungText, setMeldungText] = useState('');
     const [meldungSaving, setMeldungSaving] = useState(false);
@@ -86,7 +82,6 @@ const AdminDashboard = () => {
     const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
     const [deletingAnnouncementId, setDeletingAnnouncementId] = useState<string | null>(null);
 
-    // User management state
     const [users, setUsers] = useState<AppUser[]>([]);
     const [loadingUsers, setLoadingUsers] = useState(false);
     const [editUser, setEditUser] = useState<AppUser | null>(null);
@@ -98,7 +93,6 @@ const AdminDashboard = () => {
     const [editUserSaving, setEditUserSaving] = useState(false);
     const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
-    // Import state
     const [csvText, setCsvText] = useState('');
     const [importing, setImporting] = useState(false);
     const [importPreview, setImportPreview] = useState<any[]>([]);
@@ -313,7 +307,6 @@ const AdminDashboard = () => {
                 return;
             }
             Alert.alert("Gespeichert!", `"${title}" wurde als Kurseintrag angelegt.`);
-            // Reset form
             setTitle(''); setFachsemester(null); setStudiengang(''); setDatum('');
             setZeitVon(''); setZeitBis(''); setRaum(''); setDozent('');
             setWichtig(false); setNotizen(''); setWiederholung('nie');
@@ -500,7 +493,6 @@ const AdminDashboard = () => {
 
                 <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
 
-                    {/* === ERSTELLEN === */}
                     {activeTab === 'erstellen' && (
                         <View style={styles.card}>
                             <Text style={styles.sectionLabel}>Neuen Kurseintrag anlegen</Text>
@@ -616,7 +608,6 @@ const AdminDashboard = () => {
                         </View>
                     )}
 
-                    {/* === VERWALTEN === */}
                     {activeTab === 'verwalten' && (
                         <View style={styles.card}>
                             <Text style={styles.sectionLabel}>Einträge filtern & löschen</Text>
@@ -699,7 +690,6 @@ const AdminDashboard = () => {
                         </View>
                     )}
 
-                    {/* === CSV IMPORT === */}
                     {activeTab === 'import' && (
                         <View style={styles.card}>
                             <Text style={styles.sectionLabel}>CSV-Massenimport</Text>
@@ -731,7 +721,6 @@ const AdminDashboard = () => {
                         </View>
                     )}
 
-                    {/* === MELDUNGEN === */}
                     {activeTab === 'meldungen' && (
                         <View style={styles.card}>
                             <Text style={styles.sectionLabel}>Meldung an alle User senden</Text>
@@ -783,7 +772,6 @@ const AdminDashboard = () => {
                         </View>
                     )}
 
-                    {/* === USER MANAGEMENT === */}
                     {activeTab === 'user' && (
                         <View style={styles.card}>
                             <Text style={styles.sectionLabel}>User verwalten</Text>
@@ -832,7 +820,6 @@ const AdminDashboard = () => {
 
                 </ScrollView>
 
-                {/* Tabs */}
                 <View style={styles.tabRow}>
                     <TouchableOpacity
                         style={[styles.tab, activeTab === 'erstellen' && styles.tabActive]}
@@ -876,7 +863,7 @@ const AdminDashboard = () => {
                     </TouchableOpacity>
                 </View>
             </View>
-            {/* === USER EDIT MODAL === */}
+   
             <Modal visible={!!editUser} animationType="slide" transparent onRequestClose={() => setEditUser(null)}>
                 <View style={styles.modalOverlay}>
                     <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
@@ -905,7 +892,7 @@ const AdminDashboard = () => {
                     </ScrollView>
                 </View>
             </Modal>
-            {/* === COURSE ENTRY EDIT MODAL === */}
+
             <Modal visible={!!editEntry} animationType="slide" transparent onRequestClose={() => setEditEntry(null)}>
                 <View style={styles.modalOverlay}>
                     <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>

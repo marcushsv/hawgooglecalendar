@@ -17,7 +17,6 @@ const CELL_HEIGHT = 70;
 const GRID_HEIGHT = (HOURS.length - 1) * CELL_HEIGHT;
 const API_URL = "http://10.0.2.2:3000";
 
-// Gibt den Montag der Woche zurück, die `date` enthält
 const getWeekStart = (date: Date): Date => {
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
@@ -27,7 +26,6 @@ const getWeekStart = (date: Date): Date => {
     return d;
 };
 
-// Gibt KW-Nummer zurück
 const getCalendarWeek = (date: Date): number => {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const dayNum = d.getUTCDay() || 7;
@@ -38,14 +36,12 @@ const getCalendarWeek = (date: Date): number => {
 
 const padTwo = (n: number) => String(n).padStart(2, '0');
 
-// YYYY-MM-DD → DD.MM.YYYY
 const isoToDisplay = (iso: string) => {
     if (!iso || iso.length < 10) return iso;
     const [y, m, d] = iso.slice(0, 10).split('-');
     return `${d}.${m}.${y}`;
 };
 
-// DD.MM.YYYY → YYYY-MM-DD
 const displayToISO = (display: string) => {
     const parts = display.split('.');
     if (parts.length !== 3) return display;
@@ -62,11 +58,9 @@ const toMin = (t: string) => { const [h, m] = t.split(':').map(Number); return h
 const overlapsTime = (a: any, b: any) =>
     toMin(a.zeitVon) < toMin(b.zeitBis) && toMin(a.zeitBis) > toMin(b.zeitVon);
 
-// Returns layout info for each entry: colIndex and totalCols within its overlap group
 const computeDayLayout = (dayEntries: any[]): { entry: any; colIndex: number; totalCols: number }[] => {
     if (dayEntries.length === 0) return [];
 
-    // Union-Find to group overlapping entries into connected components
     const parent = dayEntries.map((_, i) => i);
     const find = (i: number): number => parent[i] === i ? i : (parent[i] = find(parent[i]));
     const union = (a: number, b: number) => { parent[find(a)] = find(b); };
@@ -74,7 +68,6 @@ const computeDayLayout = (dayEntries: any[]): { entry: any; colIndex: number; to
         for (let j = i + 1; j < dayEntries.length; j++)
             if (overlapsTime(dayEntries[i], dayEntries[j])) union(i, j);
 
-    // Build groups
     const groups = new Map<number, number[]>();
     for (let i = 0; i < dayEntries.length; i++) {
         const root = find(i);
@@ -107,7 +100,6 @@ const computeDayLayout = (dayEntries: any[]): { entry: any; colIndex: number; to
     return result;
 };
 
-// Prüft ob ein Entry an einem bestimmten Tag (dayDate) gezeigt werden soll
 const isEntryOnDay = (entry: any, dayDate: Date): boolean => {
     const entryDate = new Date(entry.datum);
     entryDate.setHours(0, 0, 0, 0);
@@ -118,7 +110,6 @@ const isEntryOnDay = (entry: any, dayDate: Date): boolean => {
         return entryDate.getTime() === target.getTime();
     }
 
-    // Wiederkehrend: gleicher Wochentag, Starttag vor oder gleich target
     if (entryDate.getDay() !== target.getDay()) return false;
     if (entryDate > target) return false;
 
@@ -139,7 +130,6 @@ const Stundenplan = () => {
     const [loading, setLoading] = useState(true);
     const [weekOffset, setWeekOffset] = useState(0);
 
-    // Berechnung der aktuellen Wochentage (Mo-Fr)
     const baseDate = new Date();
     baseDate.setDate(baseDate.getDate() + weekOffset * 7);
     const weekStart = getWeekStart(baseDate);
@@ -151,7 +141,6 @@ const Stundenplan = () => {
     const kw = getCalendarWeek(weekStart);
     const weekLabel = `KW ${kw}  ·  ${padTwo(weekDates[0].getDate())}.${padTwo(weekDates[0].getMonth() + 1)} – ${padTwo(weekDates[4].getDate())}.${padTwo(weekDates[4].getMonth() + 1)}`;
 
-    // Edit-Modal State
     const [editVisible, setEditVisible] = useState(false);
     const [editId, setEditId] = useState('');
     const [editName, setEditName] = useState('');
@@ -249,7 +238,6 @@ const Stundenplan = () => {
                     style={styles.hawLogo}
                     resizeMode='contain'
                 />
-                {/* Wochennavigation */}
                 <View style={styles.weekNav}>
                     <TouchableOpacity style={styles.weekNavBtn} onPress={() => setWeekOffset(w => w - 1)}>
                         <Text style={styles.weekNavArrow}>‹</Text>
@@ -269,7 +257,6 @@ const Stundenplan = () => {
                 <ScrollView>
                     <ScrollView horizontal showsHorizontalScrollIndicator={true}>
                         <View style={styles.grid}>
-                            {/* Tag-Header mit Datum */}
                             <View style={styles.headerRow}>
                                 <View style={styles.timeCell} />
                                 {DAYS.map((d, i) => {
@@ -289,9 +276,7 @@ const Stundenplan = () => {
                                 })}
                             </View>
 
-                            {/* Inhalt: Zeitachse + Tages-Spalten */}
                             <View style={styles.contentRow}>
-                                {/* Zeitlabels */}
                                 <View style={styles.timeColumn}>
                                     {HOURS.map(hour => (
                                         <View key={hour} style={styles.timeCell}>
@@ -300,7 +285,6 @@ const Stundenplan = () => {
                                     ))}
                                 </View>
 
-                                {/* Eine Spalte pro Tag */}
                                 {weekDates.map((dayDate, dayIndex) => {
                                     const dayEntries = entries.filter(
                                         e => isEntryOnDay(e, dayDate) && e.zeitVon && e.zeitBis
@@ -338,7 +322,6 @@ const Stundenplan = () => {
                 </ScrollView>
             )}
 
-            {/* Edit-Modal */}
             <Modal visible={editVisible} animationType="slide" transparent={false} onRequestClose={() => setEditVisible(false)}>
                 <SafeAreaView style={styles.modalSafe}>
                     <ScrollView style={styles.modalContainer}>
@@ -482,7 +465,6 @@ const styles = StyleSheet.create({
     },
     eventTitle: { color: '#002E99', fontSize: 11, fontWeight: '600' },
     eventSub: { color: '#002E99', fontSize: 10, opacity: 0.8 },
-    // Modal
     modalSafe: { flex: 1 },
     modalContainer: { padding: 20, backgroundColor: 'white' },
     modalCard: {

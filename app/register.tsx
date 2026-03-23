@@ -36,7 +36,6 @@ const Register = () => {
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
-                {/* Top-Bar mit Zurück und Logo */}
                 <View style={styles.topBar}>
                     <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
                         <Text style={styles.backArrow}>‹</Text>

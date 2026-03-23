@@ -18,7 +18,6 @@ mongoose.connect(process.env.ATLAS_URI)
   .then(() => console.log('MongoDB verbunden'))
   .catch(err => console.error(err));
 
-// Alle Einträge abrufen
 app.get('/entries', async (req, res) => {
   try {
     const userId = req.query.userId;
@@ -37,7 +36,6 @@ app.get('/entries', async (req, res) => {
   }
 });
 
-// Entry für einen User ausblenden (statt echtes Löschen)
 app.post('/users/:userId/hide-entry/:entryId', async (req, res) => {
   try {
     await User.findByIdAndUpdate(req.params.userId, {
@@ -49,7 +47,6 @@ app.post('/users/:userId/hide-entry/:entryId', async (req, res) => {
   }
 });
 
-// Eintrag erstellen
 app.post('/entries', async (req, res) => {
   console.log("POST /entries body:", req.body);
   try {
@@ -61,7 +58,6 @@ app.post('/entries', async (req, res) => {
   }
 });
 
-// Eintrag löschen
 app.delete('/entries/:id', async (req, res) => {
   try {
     await Entry.findByIdAndDelete(req.params.id);
@@ -71,7 +67,6 @@ app.delete('/entries/:id', async (req, res) => {
   }
 });
 
-// Eintrag bearbeiten
 app.put('/entries/:id', async (req, res) => {
   try {
     const entry = await Entry.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true });
@@ -81,7 +76,6 @@ app.put('/entries/:id', async (req, res) => {
   }
 });
 
-// Eintrag teilweise aktualisieren
 app.patch('/entries/:id', async (req, res) => {
   try {
     const entry = await Entry.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -104,7 +98,6 @@ app.patch("/entries/:id/toggle-wichtig", async (req, res) => {
   }
 });
 
-// Registrieren
 app.post('/auth/register', async (req, res) => {
     try {
         const { vorname, nachname, matrikelnummer, email, passwort } = req.body;
@@ -117,7 +110,6 @@ app.post('/auth/register', async (req, res) => {
     }
 });
 
-// Login
 app.post('/auth/login', async (req, res) => {
     try {
         const { email, passwort } = req.body;
@@ -156,9 +148,6 @@ app.put('/auth/change-password', async (req, res) => {
     }
 });
 
-// --- Course Entries (Admin erstellt, User kann hinzufügen) ---
-
-// Alle Kurseinträge suchen (nach Fachsemester und Studiengang)
 app.get('/course-entries', async (req, res) => {
   try {
     const { fachsemester, studiengang } = req.query;
@@ -172,7 +161,6 @@ app.get('/course-entries', async (req, res) => {
   }
 });
 
-// Kurseintrag erstellen (nur Admin – Auth-Check kommt später)
 app.post('/course-entries', async (req, res) => {
   try {
     const entry = new CourseEntry(req.body);
@@ -183,7 +171,6 @@ app.post('/course-entries', async (req, res) => {
   }
 });
 
-// Kurseinträge als Bulk importieren (Admin)
 app.post('/course-entries/bulk', async (req, res) => {
   try {
     const entries = req.body;
@@ -197,7 +184,6 @@ app.post('/course-entries/bulk', async (req, res) => {
   }
 });
 
-// Kurseintrag bearbeiten (Admin)
 app.put('/course-entries/:id', async (req, res) => {
   try {
     const entry = await CourseEntry.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true, runValidators: true });
@@ -208,7 +194,6 @@ app.put('/course-entries/:id', async (req, res) => {
   }
 });
 
-// Kurseintrag löschen (Admin)
 app.delete('/course-entries/:id', async (req, res) => {
   try {
     await CourseEntry.findByIdAndDelete(req.params.id);
@@ -217,8 +202,6 @@ app.delete('/course-entries/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-// --- User Management (Admin) ---
 
 app.get('/admin/users', async (req, res) => {
     try {
@@ -254,8 +237,6 @@ app.delete('/admin/users/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-
-// --- Announcements (Admin-Meldungen für alle User) ---
 
 app.get('/announcements', async (req, res) => {
   try {

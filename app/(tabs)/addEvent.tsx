@@ -34,7 +34,6 @@ const AddEvent: React.FC = () => {
     const API_URL = "http://10.0.2.2:3000";
     const [activeTab, setActiveTab] = useState<'kurssuche' | 'eigener'>('kurssuche');
 
-    // Kurssuche
     const [fachsemester, setFachsemester] = useState<number | null>(null);
     const [studiengang, setStudiengang] = useState('');
     const [courseResults, setCourseResults] = useState<CourseEntry[]>([]);
@@ -42,7 +41,6 @@ const AddEvent: React.FC = () => {
     const [hasSearched, setHasSearched] = useState(false);
     const [addingId, setAddingId] = useState<string | null>(null);
 
-    // Eigener Eintrag
     const [name, setName] = useState('');
     const todayDisplay = (() => {
         const d = new Date();
@@ -200,7 +198,6 @@ const AddEvent: React.FC = () => {
                 return;
             }
         } catch {
-            // if conflict check fails, proceed with save
         }
 
         await doSave();
@@ -223,7 +220,6 @@ const AddEvent: React.FC = () => {
                 <View style={{ height: 15 }}></View> 
                 <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false}>
                     <View style={styles.card}>
-                        {/* Tabs */}
                         <View style={styles.tabRow}>
                             <TouchableOpacity
                                 style={[styles.tab, activeTab === 'kurssuche' && styles.tabActive]}
@@ -243,7 +239,6 @@ const AddEvent: React.FC = () => {
                             </TouchableOpacity>
                         </View>
 
-                        {/* Kurssuche */}
                         {activeTab === 'kurssuche' && (
                             <View>
                                 <Text style={styles.pickerLabel}>Fachsemester</Text>
@@ -270,7 +265,6 @@ const AddEvent: React.FC = () => {
                                     autoCapitalize="characters"
                                 />
 
-                                {/* Suchergebnisse */}
                                 {searching && (
                                     <ActivityIndicator color="#002E99" style={{ marginTop: 12 }} />
                                 )}
@@ -316,7 +310,6 @@ const AddEvent: React.FC = () => {
                             </View>
                         )}
 
-                        {/* Eigener Eintrag */}
                         {activeTab === 'eigener' && (
                             <View>
                                 <TextInput style={styles.input} placeholder="Modulname" placeholderTextColor="#6A8FAD" value={name} onChangeText={setName} />

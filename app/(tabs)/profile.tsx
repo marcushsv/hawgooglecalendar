@@ -15,14 +15,12 @@ const Profile = () => {
     const [user, setUser] = useState<any>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-    // Passwort ändern
     const [altesPasswort, setAltesPasswort] = useState('');
     const [neuesPasswort, setNeuesPasswort] = useState('');
     const [passwortWdh, setPasswortWdh] = useState('');
     const [showPasswort, setShowPasswort] = useState(false);
     const [exporting, setExporting] = useState(false);
 
-    // Benachrichtigungseinstellungen
     const [notifSettings, setNotifSettings] = useState<NotificationSettings>(DEFAULT_SETTINGS);
     const [showNotifSettings, setShowNotifSettings] = useState(false);
 
@@ -87,7 +85,6 @@ const Profile = () => {
 
             const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
 
-            // HAW Kalender (LOCAL) suchen oder neu anlegen
             let hawCal = calendars.find(c => c.title === 'HAW Kalender');
             let calendarId: string;
             if (hawCal) {
@@ -105,7 +102,6 @@ const Profile = () => {
             }
 
             let added = 0;
-            // Bestehende Events löschen (HAW Kalender ist dediziert, kein Risiko)
             const existing = await Calendar.getEventsAsync([calendarId], new Date(2020, 0, 1), new Date(2030, 0, 1));
             for (const ev of existing) {
                 try { await Calendar.deleteEventAsync(ev.id); } catch { /* ignorieren */ }
@@ -153,13 +149,11 @@ const Profile = () => {
     };
 
 
-    // Eingeloggt-Ansicht
     return (
         <SafeAreaView style={styles.safeArea}>
             <ScrollView style={styles.container}>
                 <Image source={require("../../assets/images/HAW_Logo.jpg")} style={styles.hawLogo} resizeMode='contain' />
 
-                {/* Profildaten */}
                 <View style={styles.card}>
                     <Text style={styles.cardTitle}>Mein Profil</Text>
                     <View style={styles.infoRow}>
@@ -176,25 +170,21 @@ const Profile = () => {
                     </View>
                 </View>
 
-                {/* Raumbuchung */}
                 <TouchableOpacity style={styles.linkCard} onPress={() => Linking.openURL(RAUM_BUCHUNG_URL)}>
                     <Text style={styles.linkCardText}>🏛️  Raumbuchung (Anny)</Text>
                     <Text style={styles.linkCardArrow}>→</Text>
                 </TouchableOpacity>
 
-                {/* Essen & Trinken */}
                 <TouchableOpacity style={styles.linkCard} onPress={() => Linking.openURL(MENSA_URL)}>
                     <Text style={styles.linkCardText}>🥗  Speisepläne (Mensa)</Text>
                     <Text style={styles.linkCardArrow}>→</Text>
                 </TouchableOpacity>
 
-                {/* Outlook */}
                 <TouchableOpacity style={styles.linkCard} onPress={() => Linking.openURL(OUTLOOK_URL)}>
                     <Text style={styles.linkCardText}>📧  Outlook </Text>
                     <Text style={styles.linkCardArrow}>→</Text>
                 </TouchableOpacity>
 
-                {/* Benachrichtigungen */}
                 <TouchableOpacity style={styles.linkCard} onPress={() => setShowNotifSettings(!showNotifSettings)}>
                     <Text style={styles.linkCardText}>🔔  Benachrichtigungen</Text>
                     <Text style={styles.linkCardArrow}>{showNotifSettings ? '↑' : '↓'}</Text>
@@ -242,7 +232,6 @@ const Profile = () => {
                     </View>
                 )}
 
-                {/* Kalender Export */}
                 <TouchableOpacity style={styles.linkCard} onPress={handleExportToCalendar} disabled={exporting}>
                     {exporting
                         ? <ActivityIndicator color="#002E99" />
@@ -251,7 +240,6 @@ const Profile = () => {
                     <Text style={styles.linkCardArrow}>↓</Text>
                 </TouchableOpacity>
 
-                {/* Passwort ändern */}
                 <TouchableOpacity style={styles.linkCard} onPress={() => setShowPasswort(!showPasswort)}>
                     <Text style={styles.linkCardText}>🔑  Passwort ändern</Text>
                     <Text style={styles.linkCardArrow}>{showPasswort ? '↑' : '↓'}</Text>
@@ -268,7 +256,6 @@ const Profile = () => {
                     </View>
                 )}
 
-                {/* Logout */}
                 <TouchableOpacity style={[styles.button, styles.buttonLogout]} onPress={handleLogout}>
                     <Text style={styles.buttonText}>Abmelden</Text>
                 </TouchableOpacity>

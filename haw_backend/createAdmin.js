@@ -1,5 +1,3 @@
-// Einmaliges Skript zum Anlegen eines Admin-Accounts
-// Ausführen mit: node createAdmin.js
 require('dotenv').config({ path: './config.env' });
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');

@@ -28,7 +28,6 @@ type Entry = {
   wiederholung?: 'nie' | 'wöchentlich' | '2-wöchentlich';
 };
 
-// DD.MM.YYYY → YYYY-MM-DD
 const displayToISO = (display: string) => {
   const parts = display.split('.');
   if (parts.length !== 3) return display;
@@ -36,7 +35,6 @@ const displayToISO = (display: string) => {
   return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
 };
 
-// YYYY-MM-DD... → DD.MM.YYYY
 const isoToDisplay = (iso: string) => {
   if (!iso || iso.length < 10) return iso;
   const [y, m, d] = iso.slice(0, 10).split('-');
@@ -58,7 +56,6 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Edit Modal
   const [editVisible, setEditVisible] = useState(false);
   const [editId, setEditId] = useState('');
   const [editName, setEditName] = useState('');
@@ -290,7 +287,6 @@ const Home = () => {
             </TouchableOpacity>
           </View>
 
-          {/* Suchleiste */}
           <TextInput
             style={styles.searchInput}
             placeholder="Einträge durchsuchen..."
@@ -311,7 +307,6 @@ const Home = () => {
         </View>
       </ScrollView>
 
-      {/* Farblegende Modal */}
       <Modal visible={legendVisible} transparent animationType="fade" onRequestClose={() => setLegendVisible(false)}>
         <TouchableOpacity style={styles.legendOverlay} activeOpacity={1} onPress={() => setLegendVisible(false)}>
           <View style={styles.legendBox}>
@@ -339,7 +334,6 @@ const Home = () => {
         </TouchableOpacity>
       </Modal>
 
-      {/* Edit Modal */}
       <Modal visible={editVisible} animationType="slide" transparent={false} onRequestClose={() => setEditVisible(false)}>
         <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
           <ScrollView style={{ padding: 20 }}>
@@ -429,7 +423,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   btnText: { color: 'white', fontSize: 12, fontWeight: '600' },
-  // Modal
   modalCard: { backgroundColor: '#9FBDDB', borderRadius: 15, padding: 16, marginTop: 20 },
   modalTitle: { fontSize: 18, fontWeight: '600', color: '#002E99', marginBottom: 14 },
   input: {
