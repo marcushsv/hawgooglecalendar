@@ -115,7 +115,6 @@ const GuestCalendar = () => {
     const [loading, setLoading] = useState(false);
     const [weekOffset, setWeekOffset] = useState(0);
 
-    // Detail-Modal
     const [detailVisible, setDetailVisible] = useState(false);
     const [detailEntry, setDetailEntry] = useState<any>(null);
 
@@ -143,7 +142,6 @@ const GuestCalendar = () => {
             setLoaded(true);
             setWeekOffset(0);
         } catch {
-            // Fehler still – leere Liste zeigen
             setEntries([]);
             setLoaded(true);
         } finally {
@@ -153,7 +151,6 @@ const GuestCalendar = () => {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            {/* Top-Bar */}
             <View style={styles.topBar}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
                     <Text style={styles.backArrow}>‹</Text>
@@ -168,11 +165,9 @@ const GuestCalendar = () => {
 
             <View style={{ height: 30 }} />
 
-            {/* Auswahl-Card */}
             <View style={styles.selectionCard}>
                 <Text style={styles.selectionTitle}>Stundenplan anzeigen</Text>
 
-                {/* Studiengang Presets */}
                 <View style={styles.pickerRow}>
                     <Text style={{ color: '#002E99', fontSize: 14, marginRight: 6 }}>Studiengang:</Text>
                     {STUDIENGANG_PRESETS.map(sg => (
@@ -187,7 +182,6 @@ const GuestCalendar = () => {
 
                 </View>
 
-                {/* Fachsemester */}
                 <View style={styles.pickerRow}>
                     <Text style={{ color: '#002E99', fontSize: 14, marginRight: 6 }}>Semester:</Text>
                     {FACHSEMESTER_OPTIONS.map(sem => (
@@ -215,7 +209,6 @@ const GuestCalendar = () => {
                 </TouchableOpacity>
             </View>
 
-            {/* Kalender */}
             {loaded && (
                 <>
                     <View style={styles.weekNav}>
@@ -236,7 +229,6 @@ const GuestCalendar = () => {
                         <ScrollView>
                             <ScrollView horizontal showsHorizontalScrollIndicator>
                                 <View style={styles.grid}>
-                                    {/* Header */}
                                     <View style={styles.headerRow}>
                                         <View style={styles.timeCell} />
                                         {DAYS.map((d, i) => {
@@ -256,7 +248,6 @@ const GuestCalendar = () => {
                                         })}
                                     </View>
 
-                                    {/* Grid */}
                                     <View style={styles.contentRow}>
                                         <View style={styles.timeColumn}>
                                             {HOURS.map(hour => (
@@ -305,7 +296,6 @@ const GuestCalendar = () => {
                 </>
             )}
 
-            {/* Detail-Modal (read-only) */}
             <Modal visible={detailVisible} transparent animationType="fade" onRequestClose={() => setDetailVisible(false)}>
                 <Pressable style={styles.modalOverlay} onPress={() => setDetailVisible(false)}>
                     <Pressable style={styles.modalCard} onPress={() => {}}>
@@ -444,7 +434,6 @@ const styles = StyleSheet.create({
     },
     eventTitle: { color: '#002E99', fontSize: 11, fontWeight: '600' },
     eventSub: { color: '#002E99', fontSize: 10, opacity: 0.8 },
-    // Modal
     modalOverlay: {
         flex: 1, backgroundColor: 'rgba(0,0,0,0.4)',
         justifyContent: 'center', alignItems: 'center',
