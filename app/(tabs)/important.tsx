@@ -103,7 +103,9 @@ const Important = () => {
                         </View>
                     )}
 
-                    <Text style={[styles.title, { marginTop: announcements.length > 0 ? 16 : 0 }]}>Meine wichtigen Termine</Text>
+                    {announcements.length > 0 && (
+                        <Text style={[styles.title, { marginTop: 16 }]}>Meine wichtigen Termine</Text>
+                    )}
 
                     {entries.length === 0 ? (
                 <Text style={{ marginTop: 16 }}>Keine wichtigen Termine 🎉</Text>
