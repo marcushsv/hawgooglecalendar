@@ -2,6 +2,7 @@
 
 # dependencies
 node_modules/
+android/
 
 # Expo
 .expo/
@@ -39,3 +40,4 @@ server/config.env
 *.tsbuildinfo
 
 app-example
+android/gradlew.bat

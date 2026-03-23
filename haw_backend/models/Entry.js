@@ -9,7 +9,8 @@ const entrySchema = new mongoose.Schema({
   zeitBis: String,
   notizen: String,
   wichtig: { type: Boolean, default: false },
-  userId: String, // für später wenn Auth kommt
+  wiederholung: { type: String, enum: ['nie', 'wöchentlich', '2-wöchentlich'], default: 'nie' },
+  userId: String,
 }, { timestamps: true });
 
 module.exports = mongoose.model('Entry', entrySchema);

@@ -5,35 +5,37 @@ import { StyleSheet } from 'react-native';
 
 const TabsLayout = () => {
     return (
-        <Tabs>
+        <Tabs screenOptions={{ headerShown: false}}>
             <Tabs.Screen
                 name="home"
                 options={{
-                    title: 'Home', headerTitleAlign: 'center',
+                    title: 'Start',
                     tabBarIcon: ({ color, size }) => (
                         <Ionicons name="home" color={color} size={size} > </Ionicons>
-                    ),
+                    ), 
                 }} ></Tabs.Screen>
             <Tabs.Screen name='calendar' options={{
-                title: 'Calendar', headerTitleAlign: 'center',
+                title: 'Kalender',
                 tabBarIcon: ({ color, size }) => (
                     <Ionicons name="calendar" color={color} size={size} > </Ionicons>
                 ),
             }}></Tabs.Screen>
-            <Tabs.Screen name='add' options={{
-                title: 'Add', headerTitleAlign: 'center',
-                tabBarIcon: ({ color, size }) => (
-                    <Ionicons name="add" color={color} size={size} > </Ionicons>
-                ),
-            }}></Tabs.Screen>
+
             <Tabs.Screen name='addEvent' options={{
-                title: 'AddEvent', headerTitleAlign: 'center',
+                title: 'Erstellen',
                 tabBarIcon: ({ color, size }) => (
-                    <Ionicons name="add" color={color} size={size} > </Ionicons>
+                    <Ionicons name="add-circle" color={color} size={size} > </Ionicons>
+                ),
+            }}></Tabs.Screen> 
+
+            <Tabs.Screen name='important' options={{
+                title: 'Wichtig',
+                tabBarIcon: ({ color, size }) => (
+                    <Ionicons name="warning" color={color} size={size}> </Ionicons>
                 ),
             }}></Tabs.Screen>
-            <Tabs.Screen name='profile' options={{
-                title: 'Profile', headerTitleAlign: 'center',
+                        <Tabs.Screen name='profile' options={{
+                title: 'Profil',
                 tabBarIcon: ({ color, size }) => (
                     <Ionicons name="person" color={color} size={size}> </Ionicons>
                 ),
